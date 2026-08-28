@@ -1,8 +1,9 @@
 # expand-wtru
 
 Turns `wtru` in a prompt into walkthrough mode: Claude splits the subject into
-items and presents them one at a time, pausing for your confirmation between
-each.
+items and presents them one at a time, pausing for your response between each.
+Every item comes with a plain-language explanation, an example, and a
+non-technical statement of what it affects.
 
 Useful when a reply would otherwise be a wall of text you have to read in one
 go, such as reviewing a diff, understanding an unfamiliar module, or working
@@ -14,14 +15,15 @@ with nothing invoked.
 
 ## What it asks for
 
-One item per reply, each in four parts:
+One item per reply, each in five parts:
 
 | Part | Rule |
 |---|---|
 | **Title** | A short name for the item. |
-| **Explanation** | At most one paragraph. Any reference to another item, file, component or term gets a few-word gloss in parentheses right after it. |
+| **Explanation** | Very simple and very brief. Two or three sentences of plain language, no jargon. Any reference to another item, file, component or term gets a few-word gloss in parentheses right after it. |
 | **Summary** | One sentence. |
 | **Example** | Concrete, from the item's own context or from real-world usage. |
+| **Impact** | Which modules or features this affects, in one or two lines of non-technical language. |
 
 Then it stops and waits. It does not continue on its own, and it does not
 preview the remaining items.
@@ -29,9 +31,17 @@ preview the remaining items.
 If the subject is not already a list, Claude divides it into items itself and
 says how many there are up front, so you know the length before you start.
 
-The parenthetical glosses are the part that does the most work. They stop a
-walkthrough from assuming you remember every name it mentions, which is the
-usual reason this kind of explanation stops landing partway through.
+Two parts do most of the work.
+
+**The parenthetical glosses** stop a walkthrough from assuming you remember
+every name it mentions, which is the usual reason this kind of explanation
+stops landing partway through.
+
+**Impact** is deliberately non-technical: it names the part of the product a
+person would recognise and what changes for them, not the files or symbols
+involved. So "the photo at the top of the home page and the About page"
+rather than "ResponsiveImage and the generated manifest". When nothing
+user-facing changes, it says so plainly instead of inventing a consequence.
 
 ## How it works
 
@@ -84,10 +94,12 @@ degrading quietly. `brew install jq` on macOS.
 
 ## Composing with expand-ebse
 
-The two are designed to stack. `wtru` controls the *shape* of the answer (one
-item at a time, four parts, pause between). `ebse` controls the *register*
-(brief, plain language, with examples). Using both in one prompt gives you a
-walkthrough in plain language.
+The two are designed to stack, and they overlap on purpose. `wtru` controls
+the *shape* of the answer (one item at a time, five parts, pause between) and
+already asks for plain language and examples within each item. `ebse` controls
+the *register* of a reply generally. Using both is harmless and reinforces the
+same thing; using `ebse` alone is the right call when you want brevity without
+the item-by-item pacing.
 
 ## Adapting it
 
