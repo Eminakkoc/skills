@@ -5,9 +5,9 @@
 # standalone token "wtru" (case-insensitive, whole word), injects context
 # putting Claude into walkthrough mode: one item per reply, each with a
 # title, a very brief plain-language explanation, a one-sentence summary,
-# an example and a non-technical statement of impact, pausing for the
-# user's response between items. Emits nothing otherwise, so it is a no-op
-# on normal prompts.
+# an example, a non-technical statement of impact and, for findings and
+# bugs only, a suggested fix. Pauses for the user's response between items.
+# Emits nothing otherwise, so it is a no-op on normal prompts.
 set -euo pipefail
 
 input=$(cat)
@@ -28,12 +28,13 @@ In walkthrough mode:
 
 2. Present exactly ONE item per reply. Never batch two items into one message, and do not preview or summarize the remaining items.
 
-3. Give each item these five parts, in this order:
+3. Give each item these six parts, in this order:
    - Title: a short name for the item.
    - Explanation: very simple and very brief. Two or three sentences of plain language, no jargon. Whenever it refers to another item, file, component or term the user may not already have in mind, add a few-word gloss in parentheses immediately after the reference, for example "reads from the manifest (the generated file holding the image sizes)".
    - Summary: one sentence capturing the item.
    - Example: one concrete example, drawn either from the item's own context or from ordinary real-world usage.
    - Impact: which modules or features this affects, in one or two lines, in NON-TECHNICAL language. Name the part of the product a person would recognise and what changes for them, not the files, components or symbols involved. Prefer "the photo at the top of the home page and the About page" over "ResponsiveImage and the generated manifest". If nothing user-facing changes, say so plainly.
+   - Suggested fix: at most two sentences saying what to do about it. Include this part ONLY when the item is a finding, a bug, or something else that needs fixing. For an item that is simply being explained, omit the part entirely rather than writing "not applicable" or "none needed".
 
 4. Stop after each item and wait for the user to respond before moving to the next. Do not continue on your own initiative. Proceed only when the user replies.
 
