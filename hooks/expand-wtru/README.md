@@ -3,8 +3,8 @@
 Turns `wtru` in a prompt into walkthrough mode: Claude splits the subject into
 items and presents them one at a time, pausing for your response between each.
 Every item comes with a plain-language explanation, an example, and a
-non-technical statement of what it affects. Findings and bugs also get a
-short suggested fix.
+non-technical statement of what it affects. Findings and bugs also get a short
+suggested fix and a concrete example of that fix.
 
 Useful when a reply would otherwise be a wall of text you have to read in one
 go, such as reviewing a diff, understanding an unfamiliar module, or working
@@ -16,7 +16,7 @@ with nothing invoked.
 
 ## What it asks for
 
-One item per reply, each in up to six parts:
+One item per reply, each in up to seven parts:
 
 | Part | Rule |
 |---|---|
@@ -26,6 +26,7 @@ One item per reply, each in up to six parts:
 | **Example** | Concrete, from the item's own context or from real-world usage. |
 | **Impact** | Which modules or features this affects, in one or two lines of non-technical language. |
 | **Suggested fix** | At most two sentences. Only for findings and bugs; omitted entirely otherwise. |
+| **Suggested fix example** | A short before/after, snippet, or exact change. Only when there is a Suggested fix. |
 
 Then it stops and waits. It does not continue on its own, and it does not
 preview the remaining items.
@@ -33,11 +34,16 @@ preview the remaining items.
 If the subject is not already a list, Claude divides it into items itself and
 says how many there are up front, so you know the length before you start.
 
-The last part is conditional. It appears when the item is a finding, a bug,
-or something else that needs fixing, and is left out completely for items that
-are simply being explained, rather than padding every one with "not
-applicable". So the same walkthrough works for both a code review and a tour
-of an unfamiliar module.
+The last two parts are conditional and come as a pair. They appear when the
+item is a finding, a bug, or something else that needs fixing, and are left out
+completely for items that are simply being explained, rather than padding every
+one with "not applicable". So the same walkthrough works for both a code review
+and a tour of an unfamiliar module.
+
+The example is tied to the fix, not to the item: a fix stated in prose is easy
+to nod along to and hard to act on, so the pair gives you the intent and the
+concrete shape of the change together. It never appears without a fix above
+it.
 
 Two parts do most of the work.
 
@@ -103,7 +109,7 @@ degrading quietly. `brew install jq` on macOS.
 ## Composing with expand-ebse
 
 The two are designed to stack, and they overlap on purpose. `wtru` controls
-the *shape* of the answer (one item at a time, up to six parts, pause
+the *shape* of the answer (one item at a time, up to seven parts, pause
 between) and
 already asks for plain language and examples within each item. `ebse` controls
 the *register* of a reply generally. Using both is harmless and reinforces the
