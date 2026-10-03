@@ -86,7 +86,7 @@
       "marketplace": "millwright-inspector",
       "marketplaceRepo": "Eminakkoc/Millwright-Inspector-Development-Machine",
       "plugin": "millwright-inspector-development-machine",
-      "reviewed": "1.9.0",
+      "reviewed": "1.10.0",
       "reviewedAt": "2026-10-03",
       "risk": "medium",
       "changelog": "https://github.com/Eminakkoc/Millwright-Inspector-Development-Machine/commits/main"

@@ -551,7 +551,20 @@ cmd_update() {
     want=$(item_version "$name")
     [ "$have" = "$want" ] && continue
     if [ "$kind" = plugin ]; then
-      say "  $name: index reviewed $want (was $have); update it with: claude plugin update $(echo "$entry" | jq -r .plugin)"
+      # The marketplace decides plugin versions; once Claude Code has the
+      # reviewed one installed, just record it.
+      if [ "$scope" = user ] && command -v claude >/dev/null &&
+        claude plugin list --json | jq -e --arg id "$(echo "$entry" | jq -r .plugin)" --arg v "$want" \
+          'any(.[]; .id == $id and .version == $v)' >/dev/null; then
+        if [ "$OPT_DRY" = 1 ]; then
+          say "  $name: installed plugin is the reviewed $want; will record it"
+        else
+          lock_put "$scope" "$name" "$(echo "$entry" | jq -c --arg v "$want" '.version = $v')"
+          say "  $name: installed plugin is the reviewed $want; recorded"
+        fi
+      else
+        say "  $name: index reviewed $want (was $have); update it with: claude plugin update $(echo "$entry" | jq -r .plugin)"
+      fi
       continue
     fi
     if [ "$kind" = tool ] && [ "$have" = external ]; then continue; fi
