@@ -27,6 +27,41 @@
         "name": "Google Chrome"
       },
       "homepage": "https://developer.chrome.com/docs/modern-web-guidance"
+    },
+    {
+      "name": "vercel-agent-skills",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/vercel-labs/agent-skills.git",
+        "path": "skills"
+      },
+      "strict": false,
+      "skills": [
+        "./web-design-guidelines",
+        "./composition-patterns",
+        "./react-view-transitions"
+      ],
+      "description": "Selected Vercel skills: web design guidelines review, React composition patterns, React view transitions. Referenced, not copied; tracks upstream.",
+      "author": {
+        "name": "Vercel"
+      },
+      "homepage": "https://vercel.com/docs/agent-resources/skills"
+    },
+    {
+      "name": "agent-browser",
+      "source": {
+        "source": "github",
+        "repo": "vercel-labs/agent-browser"
+      },
+      "strict": false,
+      "skills": [
+        "./skills/agent-browser"
+      ],
+      "description": "Vercel's browser automation skill. Needs the agent-browser CLI: npm i -g agent-browser && agent-browser install. Referenced, not copied; tracks upstream.",
+      "author": {
+        "name": "Vercel"
+      },
+      "homepage": "https://github.com/vercel-labs/agent-browser"
     }
   ]
 }
