@@ -28,6 +28,9 @@ nothing, so it is a no-op.
 
 ## Install
 
+Installing the `toolkit` plugin (see the repo README) wires this hook up
+automatically. The manual steps below are for using it standalone.
+
 1. Copy the script somewhere stable and make it executable:
 
    ```bash

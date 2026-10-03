@@ -1,0 +1,32 @@
+{
+  "name": "eminakkoc",
+  "description": "Emin Akkoc's personal Claude Code skills and hooks, plus referenced third-party plugins.",
+  "owner": {
+    "name": "Emin Akkoc",
+    "email": "emin.akkoc@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "toolkit",
+      "source": "./",
+      "description": "My own skills and prompt-expansion hooks (ebse, wtru, exios, exi2s, ruview).",
+      "author": {
+        "name": "Emin Akkoc",
+        "email": "emin.akkoc@gmail.com"
+      },
+      "homepage": "https://github.com/Eminakkoc/skills"
+    },
+    {
+      "name": "modern-web-guidance",
+      "source": {
+        "source": "github",
+        "repo": "GoogleChrome/modern-web-guidance"
+      },
+      "description": "Google Chrome's web platform best-practice skills. Referenced, not copied; tracks upstream.",
+      "author": {
+        "name": "Google Chrome"
+      },
+      "homepage": "https://developer.chrome.com/docs/modern-web-guidance"
+    }
+  ]
+}
