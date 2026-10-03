@@ -27,6 +27,7 @@ catalog add bundle:web            # or individual items: catalog add composition
 catalog list --installed          # what this project and ~/.claude have
 catalog doctor                    # after cloning: check files and required CLI tools
 catalog update --dry-run          # see newer pinned versions, then: catalog update
+catalog self-update               # refresh the catalog command itself (update does this too)
 catalog remove agent-browser
 ```
 

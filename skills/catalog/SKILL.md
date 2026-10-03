@@ -27,7 +27,8 @@ If `catalog` is not on PATH, tell the user to run:
 | Add to every project (user scope) | `catalog add --user <item>` |
 | Remove | `catalog remove <item>` (`--user` for user scope) |
 | Check a freshly cloned project | `catalog doctor --dry-run`, then `catalog doctor --yes` if they agree to install missing tools |
-| Update installed items | `catalog update --dry-run`, show the changes, then `catalog update --yes` once they agree |
+| Update installed items | `catalog update --dry-run`, show the changes, then `catalog update --yes` once they agree (this also refreshes the `catalog` command) |
+| Update just the `catalog` command | `catalog self-update` |
 
 Confirmations need a terminal, which you don't have: always show the
 `--dry-run` result first and only pass `--yes` after the user agrees in chat.

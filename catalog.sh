@@ -30,6 +30,8 @@ Using the catalog
   add <item|bundle:name> ...     install items into this project (--user: ~/.claude)
   remove <item> ...              remove items installed by the catalog
   update [item ...]              move installed items to the index's current versions
+                                 (also refreshes the catalog command itself)
+  self-update                    replace ~/.local/bin/catalog with the index's catalog.sh
   doctor                         check installed items, files and required tools
 
 Maintaining the index (run inside a checkout of the index repo)
@@ -534,11 +536,39 @@ cmd_remove() {
   for name in "$@"; do uninstall_item "$scope" "$name"; done
 }
 
+# Replace the installed command with the index's catalog.sh. The new file is
+# moved into place rather than written over the old one, because bash reads a
+# running script as it goes and would trip over its own file changing.
+self_update() {
+  load_index
+  local dest="$BIN_DIR/catalog" tmp
+  if [ ! -f "$dest" ]; then
+    say "catalog command not installed in $BIN_DIR (run: catalog setup)"
+    return 0
+  fi
+  if cmp -s "$INDEX_DIR/catalog.sh" "$dest"; then
+    say "catalog command is up to date"
+    return 0
+  fi
+  if [ "$OPT_DRY" = 1 ]; then
+    say "catalog command: a newer version is available"
+    return 0
+  fi
+  tmp=$(mktemp "$BIN_DIR/.catalog.XXXXXX")
+  cp "$INDEX_DIR/catalog.sh" "$tmp"
+  chmod +x "$tmp"
+  mv "$tmp" "$dest"
+  say "✔ catalog command updated ($dest)"
+}
+
+cmd_self_update() { self_update; }
+
 cmd_update() {
   load_index
   local scope name entry kind have want note changes="" only=" $* "
   scope=$(target_scope)
   init_scope "$scope"
+  self_update
   for name in $(lock_names "$scope"); do
     [ $# -eq 0 ] || case "$only" in *" $name "*) ;; *) continue ;; esac
     if ! has_item "$name"; then
@@ -823,6 +853,7 @@ main() {
     add) cmd_add "$@" ;;
     remove | rm) cmd_remove "$@" ;;
     update) cmd_update "$@" ;;
+    self-update) cmd_self_update "$@" ;;
     doctor) cmd_doctor "$@" ;;
     check-updates) cmd_check_updates "$@" ;;
     bump) cmd_bump "$@" ;;

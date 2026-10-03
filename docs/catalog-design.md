@@ -246,6 +246,7 @@ it from a checkout instead.
 | `add <item\|bundle:name>… [--user] [--force]` | Installs items into the current project (or user scope with `--user`), resolving `requires`. |
 | `remove <item>…` | Removes an item's files and settings entries, using the lock file. |
 | `update [<item>…]` | Compares the lock file with the current index, shows each version change (flagging ones that would overwrite local edits), applies it after confirmation. Plugins are only reported, with the `claude plugin update` command to run. |
+| `self-update` | Replaces `~/.local/bin/catalog` with the index's `catalog.sh` (moved into place, so a running copy isn't disturbed). `update` runs it first. |
 | `doctor` | Checks both lock files: files present, local edits, plugins installed, tools and `requires` on PATH. Offers to install missing tools. Exit 1 on problems. |
 | `check-updates [--json]` | Index maintenance: compares every source's `pinned`/`reviewed` with upstream and outputs a report (see below). Read-only. |
 | `bump <source> [<version>]` | Index maintenance: moves a source's pin (or `reviewed`) to the given or latest version and updates the date. |
