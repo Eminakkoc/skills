@@ -15,8 +15,13 @@ Inside Claude Code:
 /plugin install agent-browser@eminakkoc
 ```
 
-Or from a shell: `./install.sh` (add `--local` to register this checkout
-instead of GitHub, so edits take effect without pushing).
+Or, to set up a new machine with **every** plugin I use (including ones from
+other marketplaces, like `vercel@claude-plugins-official`), run `./install.sh`
+from a shell. It reads `plugins.json`, adds any missing marketplaces, and
+installs each plugin at user scope; re-running it is safe. Add `--local` to
+register this checkout instead of GitHub, so edits take effect without pushing.
+
+When you install or remove a plugin, update `plugins.json` to match.
 
 Pull updates later with `/plugin marketplace update eminakkoc`.
 
@@ -31,7 +36,8 @@ Hooks need `jq` (`brew install jq`).
 skills/<name>/SKILL.md   my own skills, one folder each, folder = skill name
 hooks/hooks.json         wires the hook scripts into the plugin
 hooks/<name>/            one hook per folder: script + README
-install.sh               shell bootstrap for a new machine
+plugins.json             every plugin I use, as plugin@marketplace, plus marketplace sources
+install.sh               installs everything in plugins.json on a new machine
 ```
 
 ## What's in it
