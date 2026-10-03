@@ -1,0 +1,55 @@
+@startuml 02-add-items-to-project
+title Scenario 2: Add items to a project for the first time
+
+actor User
+participant "Claude Code\nsession" as Claude
+participant "catalog skill" as Skill
+participant "catalog.sh" as Cat
+participant "GitHub\n(Eminakkoc/skills)" as Index
+participant "Upstream sources\n(GitHub / npm)" as Up
+database "<project>/.claude\n+ .mcp.json" as Proj
+database "<U+007E>/.claude" as Home
+
+User -> Claude : "add the web bundle to this project"
+Claude -> Skill : load (request matches catalog skill)
+Skill --> Claude : run catalog.sh, never edit\nsettings or lock files by hand
+Claude -> Cat : catalog add bundle:web
+
+== Resolve ==
+Cat -> Index : resolve main -> SHA, fetch catalog.json + sources.json
+Index --> Cat : index @ SHA
+Cat -> Cat : expand bundle into items
+Cat -> Cat : check scope of each item
+alt item has scope = user (and no --force)
+  Cat --> Claude : refuse that item\n("user item, install with --user")
+end
+Cat -> Cat : resolve "requires"
+opt a required tool is missing (e.g. agent-browser CLI)
+  Cat -> Up : install tool @ pinned (user scope)
+  Cat -> Home : record in <U+007E>/.claude/catalog.lock.json
+end
+
+== Install into the project ==
+loop each project item
+  alt kind = skill
+    Cat -> Up : fetch <repo> @ <pinned SHA>\n(or this repo @ index SHA for own items)
+    Cat -> Proj : write .claude/skills/<name>/
+  else kind = hook
+    Cat -> Proj : write .claude/hooks/<name>/<script>
+    Cat -> Proj : merge entry into .claude/settings.json\n(command = "$CLAUDE_PROJECT_DIR"/.claude/hooks/...)
+  else kind = mcp
+    Cat -> Proj : merge server into .mcp.json\n(npx <package>@<pinned> for npm servers)
+  else kind = plugin
+    Cat -> Proj : add extraKnownMarketplaces + enabledPlugins\nto .claude/settings.json
+  end
+  Cat -> Proj : record item in .claude/catalog.lock.json
+end
+
+Cat --> Claude : summary: files written, settings merged
+Claude --> User : show changes, suggest committing\n.claude/ and .mcp.json
+
+== Next session ==
+User -> Claude : restart claude in the project
+Claude -> Proj : load project skills and hooks
+Claude --> User : prompt to approve project MCP servers\nand install enabled plugins
+@enduml

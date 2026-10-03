@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "sources": {
+    "vercel-agent-skills": {
+      "type": "github",
+      "repo": "vercel-labs/agent-skills",
+      "pinned": "063bee94c3f4df8453406c830b0a7df0f2860278",
+      "pinnedAt": "2026-10-03",
+      "risk": "low",
+      "changelog": "https://github.com/vercel-labs/agent-skills/commits/main"
+    },
+    "agent-browser": {
+      "type": "github",
+      "repo": "vercel-labs/agent-browser",
+      "pinned": "526157cfd4ec64f45939f9ba0f10d5936aa7ac33",
+      "pinnedAt": "2026-10-03",
+      "risk": "low",
+      "changelog": "https://github.com/vercel-labs/agent-browser/releases"
+    },
+    "modern-web-guidance": {
+      "type": "github",
+      "repo": "GoogleChrome/modern-web-guidance",
+      "pinned": "84ae7251ee919239d5ea85aef25897983f26601e",
+      "pinnedAt": "2026-10-03",
+      "risk": "low",
+      "changelog": "https://github.com/GoogleChrome/modern-web-guidance/commits/main"
+    },
+    "plantuml-mcp-server": {
+      "type": "npm",
+      "package": "plantuml-mcp-server",
+      "pinned": "0.2.4",
+      "pinnedAt": "2026-10-03",
+      "risk": "high",
+      "changelog": "https://www.npmjs.com/package/plantuml-mcp-server?activeTab=versions"
+    },
+    "agent-browser-cli": {
+      "type": "npm",
+      "package": "agent-browser",
+      "pinned": "0.38.2",
+      "pinnedAt": "2026-10-03",
+      "risk": "high",
+      "changelog": "https://github.com/vercel-labs/agent-browser/releases"
+    },
+    "superpowers": {
+      "type": "plugin",
+      "marketplace": "claude-plugins-official",
+      "marketplaceRepo": "anthropics/claude-plugins-official",
+      "plugin": "superpowers",
+      "reviewed": "6.4.1",
+      "reviewedAt": "2026-10-03",
+      "risk": "medium",
+      "changelog": "https://github.com/obra/superpowers/releases"
+    },
+    "context7": {
+      "type": "plugin",
+      "marketplace": "claude-plugins-official",
+      "marketplaceRepo": "anthropics/claude-plugins-official",
+      "plugin": "context7",
+      "reviewed": "ab024cdcfa7c",
+      "reviewedAt": "2026-10-03",
+      "risk": "medium",
+      "changelog": "https://github.com/anthropics/claude-plugins-official/commits/main/external_plugins/context7"
+    },
+    "vercel-plugin": {
+      "type": "plugin",
+      "marketplace": "claude-plugins-official",
+      "marketplaceRepo": "anthropics/claude-plugins-official",
+      "plugin": "vercel",
+      "reviewed": "0.50.0",
+      "reviewedAt": "2026-10-03",
+      "risk": "medium",
+      "changelog": "https://github.com/vercel/vercel-plugin/releases"
+    },
+    "figma": {
+      "type": "plugin",
+      "marketplace": "claude-plugins-official",
+      "marketplaceRepo": "anthropics/claude-plugins-official",
+      "plugin": "figma",
+      "reviewed": "2.2.120",
+      "reviewedAt": "2026-10-03",
+      "risk": "medium",
+      "changelog": "https://github.com/figma/mcp-server-guide/commits/main"
+    },
+    "millwright-inspector": {
+      "type": "plugin",
+      "marketplace": "millwright-inspector",
+      "marketplaceRepo": "Eminakkoc/Millwright-Inspector-Development-Machine",
+      "plugin": "millwright-inspector-development-machine",
+      "reviewed": "1.9.0",
+      "reviewedAt": "2026-10-03",
+      "risk": "medium",
+      "changelog": "https://github.com/Eminakkoc/Millwright-Inspector-Development-Machine/commits/main"
+    }
+  }
+}

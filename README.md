@@ -1,84 +1,114 @@
 # skills
 
-My Claude Code skills and hooks, packaged as a plugin marketplace so any
-machine can pick them up with two commands.
+An index of the Claude Code skills, hooks, MCP servers, plugins and CLI tools I
+use. Any machine or project pulls only what it needs from here, without cloning
+this repo or installing it as a plugin. Third-party items are referenced at a
+pinned version, not copied, and checked for upstream updates on demand.
 
-## Install
+Design: [`docs/catalog-design.md`](docs/catalog-design.md), with sequence
+diagrams in [`docs/diagrams/`](docs/diagrams/).
 
-Inside Claude Code:
+## New machine
 
+```bash
+curl -fsSL https://raw.githubusercontent.com/Eminakkoc/skills/main/catalog.sh | bash -s -- setup
 ```
-/plugin marketplace add Eminakkoc/skills
-/plugin install toolkit@eminakkoc
-/plugin install modern-web-guidance@eminakkoc
-/plugin install vercel-agent-skills@eminakkoc
-/plugin install agent-browser@eminakkoc
+
+This installs the `catalog` command to `~/.local/bin` and every user-scope item
+(my prompt-expansion hooks, personal plugins, the `catalog` skill). Needs `jq`,
+`curl`, `git` and the `claude` CLI; `gh` for maintenance commands. Restart
+Claude Code afterwards.
+
+## In a project
+
+```bash
+catalog list                      # what the catalog offers
+catalog add bundle:web            # or individual items: catalog add composition-patterns
+catalog list --installed          # what this project and ~/.claude have
+catalog doctor                    # after cloning: check files and required CLI tools
+catalog update --dry-run          # see newer pinned versions, then: catalog update
+catalog remove agent-browser
 ```
 
-Or, to set up a new machine with **every** plugin I use (including ones from
-other marketplaces, like `vercel@claude-plugins-official`), run `./install.sh`
-from a shell. It reads `plugins.json`, installs the CLI tools plugins need
-(e.g. `plantuml-mcp-server` for millwright-inspector's plantuml MCP), adds any
-missing marketplaces, and installs each plugin at user scope; re-running it is safe. Add `--local` to
-register this checkout instead of GitHub, so edits take effect without pushing.
+Or ask Claude in plain words ("add the web bundle to this project"); the
+`catalog` skill runs these commands. Commit the project's `.claude/` and
+`.mcp.json` so the project carries its items; `.claude/catalog.lock.json`
+records what was installed at which version.
 
-When you install or remove a plugin, update `plugins.json` to match.
+Every item has a scope: `user` items go to `~/.claude` (`--user`), `project`
+items into the current project. `user` items are skipped in a project unless
+you pass `--force`.
 
-Pull updates later with `/plugin marketplace update eminakkoc`.
+## Catalog
 
-Hooks need `jq` (`brew install jq`).
+<!-- catalog:start -->
+| Item | Kind | Scope | Source | What it does |
+|---|---|---|---|---|
+| `expand-ebse` | hook | user | this repo | `ebse` → explain briefly in simple language and with examples |
+| `expand-exi2s` | hook | user | this repo | `exi2s` → explain in two sentences |
+| `expand-exios` | hook | user | this repo | `exios` → explain in one sentence |
+| `expand-ruview` | hook | user | this repo | `ruview` → file-review request |
+| `expand-wtru` | hook | user | this repo | `wtru` → walk through items one at a time |
+| `context7` | plugin | user | anthropics/claude-plugins-official | Current library and framework docs (MCP) |
+| `figma` | plugin | project | anthropics/claude-plugins-official | Figma MCP server and design-to-code skills |
+| `millwright-inspector-development-machine` | plugin | user | Eminakkoc/Millwright-Inspector-Development-Machine | Millwright/inspector development workflow |
+| `superpowers` | plugin | user | anthropics/claude-plugins-official | Process skills: brainstorming, TDD, planning, debugging |
+| `vercel` | plugin | project | anthropics/claude-plugins-official | Vercel platform skills, agents and commands |
+| `agent-browser` | skill | project | vercel-labs/agent-browser | Vercel: browser automation through the agent-browser CLI |
+| `catalog` | skill | user | this repo | Drives catalog.sh: add, remove, update and check items from this index |
+| `chrome-extensions` | skill | project | GoogleChrome/modern-web-guidance | Google Chrome: building and publishing Chrome extensions |
+| `composition-patterns` | skill | project | vercel-labs/agent-skills | Vercel: React composition patterns |
+| `modern-web-guidance` | skill | project | GoogleChrome/modern-web-guidance | Google Chrome: modern web platform best practices |
+| `react-view-transitions` | skill | project | vercel-labs/agent-skills | Vercel: React view transitions |
+| `web-design-guidelines` | skill | project | vercel-labs/agent-skills | Vercel: review UI code against web design guidelines |
+| `web-images` | skill | project | this repo | Image performance: sizing, srcset, formats, LCP, layout shift |
+| `agent-browser-cli` | tool | user | agent-browser | CLI behind the agent-browser skill |
+| `plantuml-mcp-server` | tool | user | plantuml-mcp-server | CLI behind millwright-inspector's plantuml MCP |
+
+Bundles: `bundle:personal` (catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine); `bundle:web` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser); `bundle:react` (composition-patterns, react-view-transitions); `bundle:vercel` (vercel, web-design-guidelines)
+<!-- catalog:end -->
+
+Vercel skills already shipped by the `vercel` plugin (react-best-practices,
+next-*, ai-sdk, workflow, vercel-cli, shadcn) are left out to avoid duplicates.
 
 ## Layout
 
 ```
-.claude-plugin/
-  marketplace.json   the catalog: my toolkit plus referenced external plugins
-  plugin.json        manifest for the "toolkit" plugin (this repo)
-skills/<name>/SKILL.md   my own skills, one folder each, folder = skill name
-hooks/hooks.json         wires the hook scripts into the plugin
-hooks/<name>/            one hook per folder: script + README
-plugins.json             every plugin I use (plugin@marketplace), marketplace sources, and CLI tools they need
-install.sh               installs everything in plugins.json on a new machine
+catalog.json          every installable item: kind, scope, source, path
+sources.json          third-party upstreams: location, pinned/reviewed version, risk
+catalog.sh            the catalog command (install, update, doctor, maintenance)
+skills/<name>/        my own skills, one folder each
+hooks/<name>/         my own hooks: script + README
+docs/                 design and sequence diagrams
 ```
-
-## What's in it
-
-**toolkit** (this repo)
-
-| Kind | Name | What it does |
-|---|---|---|
-| Skill | `toolkit:web-images` | Image performance: sizing, srcset, formats, LCP, layout shift |
-| Hook | `ebse`, `wtru`, `exios`, `exi2s`, `ruview` | Expand inline abbreviations in prompts; see each `hooks/<name>/README.md` |
-
-**External, referenced and not copied**
-
-| Plugin | Source |
-|---|---|
-| `modern-web-guidance` | [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) |
-| `vercel-agent-skills` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills): `web-design-guidelines`, `composition-patterns`, `react-view-transitions` only |
-| `agent-browser` | [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser); needs `npm i -g agent-browser && agent-browser install` |
-
-Vercel skills already shipped by the `vercel@claude-plugins-official` plugin
-(react-best-practices, next-*, ai-sdk, workflow, vercel-cli, shadcn) are left
-out to avoid duplicates.
 
 ## Adding things
 
-- **My own skill:** create `skills/<name>/SKILL.md` with `name: <name>` in the
-  frontmatter. It shows up as `toolkit:<name>`.
-- **My own hook:** add `hooks/<name>/<name>.sh` (executable) and an entry in
-  `hooks/hooks.json` using `${CLAUDE_PLUGIN_ROOT}/hooks/<name>/<name>.sh`.
-- **Someone else's plugin:** add an entry to `.claude-plugin/marketplace.json`
-  with a `github` source. To take only some skills from a repo of plain
-  `SKILL.md` folders (no plugin manifest), use a `git-subdir` source pointing
-  at the folder that holds them, set `"strict": false`, and list the ones you
-  want in `"skills"` (see `vercel-agent-skills`). Pointing at the repo root
-  instead loads every skill in its `skills/` folder regardless of the list. Leaving it unpinned follows upstream; add `"ref"` or
-  `"sha"` to freeze a version.
-- **Someone else's skill I want to modify:** copy it into `skills/<name>/` and
-  add a `SOURCE.md` noting the upstream URL, commit, and date copied.
+- **My own skill:** create `skills/<name>/SKILL.md`, then add an item with
+  `"source": "self"` and `"path": "skills/<name>"` to `catalog.json`.
+- **My own hook:** add `hooks/<name>/<name>.sh` (executable) and a README, then
+  an item with `"kind": "hook"` and `"hook": {"event": ..., "script": ...}`.
+- **A third-party skill:** add (or reuse) a `github` source in `sources.json`
+  pinned to a commit SHA, then an item pointing at its `path` in that repo.
+- **A third-party plugin:** add a `plugin` source (marketplace, its repo, plugin
+  name, `reviewed` version), then an item with `"kind": "plugin"`.
+- **A CLI tool something needs:** add an `npm`/`pypi` source and a `tool` item
+  with `bin` and `install` (`{version}` is replaced with the pin); list it in
+  the dependent item's `requires`.
+- **A third-party skill I want to modify:** copy it into `skills/<name>/` with a
+  `SOURCE.md` noting the upstream URL and commit, and make it a `self` item.
 
-Bump `version` in `.claude-plugin/plugin.json` when you change the toolkit, so
-installed copies update.
+Then run `./catalog.sh readme` to regenerate the table above.
 
-Run `claude plugin validate .` before pushing.
+## Keeping third-party items current
+
+Inside this repo, ask Claude to "check catalog updates", or run:
+
+```bash
+./catalog.sh check-updates          # compare every source with upstream (read-only)
+./catalog.sh bump <source>          # move a pin to the latest (or a given) version
+```
+
+The `catalog` skill reviews each update by risk (skills: summary; plugins:
+changelog; CLI tools and MCP servers: full diff) and opens a PR with the bumps.
+Projects pick up merged pins with `catalog update`.

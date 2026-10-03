@@ -1,0 +1,69 @@
+@startuml 01-new-machine-setup
+title Scenario 1: Set up a new machine (user-scope items)
+
+actor User
+participant "Terminal" as Term
+participant "catalog.sh" as Cat
+participant "GitHub\n(Eminakkoc/skills)" as Index
+participant "Upstream sources\n(GitHub / npm)" as Up
+participant "Claude Code CLI" as CC
+database "<U+007E>/.claude" as Home
+database "<U+007E>/.local/bin" as Bin
+
+User -> Term : curl -fsSL .../catalog.sh | bash -s -- setup
+Term -> Index : GET raw catalog.sh (main)
+Index --> Term : catalog.sh
+Term -> Cat : run "setup"
+
+== Preflight ==
+Cat -> Cat : check jq, gh, curl, claude on PATH
+alt a prerequisite is missing
+  Cat --> User : abort with install hint\n(e.g. "brew install jq")
+end
+
+== Resolve the index ==
+Cat -> Index : resolve main -> commit SHA
+Index --> Cat : index SHA
+Cat -> Index : download tarball @ index SHA
+Index --> Cat : catalog.json, sources.json,\nskills/, hooks/
+Cat -> Bin : install self as "catalog"
+
+== Plan ==
+Cat -> Cat : select items with scope = user, except tools\n(or only the items / bundles given)
+Cat -> Cat : resolve "requires" (tools first)\nbin already on PATH -> recorded as "external"
+
+== Install ==
+loop each selected item
+  alt kind = tool
+    Cat -> Cat : bin already on PATH?
+    opt missing
+      Cat -> Up : npm install -g <package>@<pinned>
+    end
+  else kind = skill, source = self
+    Cat -> Home : copy skills/<name>/ -> <U+007E>/.claude/skills/<name>/
+  else kind = skill, third-party
+    Cat -> Up : codeload <repo> tarball @ <pinned SHA>
+    Up --> Cat : tarball
+    Cat -> Home : extract <path> -> <U+007E>/.claude/skills/<name>/
+  else kind = hook
+    Cat -> Home : copy script -> <U+007E>/.claude/hooks/<name>/ (chmod +x)
+    Cat -> Home : merge hook entry into <U+007E>/.claude/settings.json\n(command = <U+007E>/.claude/hooks/<name>/<script>)
+  else kind = mcp
+    Cat -> CC : claude mcp add --scope user <name> ...
+  else kind = plugin
+    Cat -> CC : claude plugin marketplace add <marketplaceRepo>\n(if not known yet)
+    Cat -> CC : claude plugin install <plugin>@<marketplace>
+    note right : version is decided by the\nmarketplace ("reviewed", not pinned)
+  end
+  Cat -> Home : record item in <U+007E>/.claude/catalog.lock.json\n(source, version, files written)
+end
+
+== Finish ==
+Cat --> User : summary of installed items\n+ "restart Claude Code"
+User -> CC : start claude
+CC -> Home : loads user skills, hooks, MCPs, plugins
+note over User, Home
+  From here, the "catalog" skill is available in every session,
+  so later requests can be made in plain words.
+end note
+@enduml

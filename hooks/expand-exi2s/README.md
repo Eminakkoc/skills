@@ -29,8 +29,8 @@ nothing, so it is a no-op.
 
 ## Install
 
-Installing the `toolkit` plugin (see the repo README) wires this hook up
-automatically. The manual steps below are for using it standalone.
+`catalog add --user expand-exi2s` (see the repo README) installs and wires this hook up
+automatically. The manual steps below are for using it without the catalog.
 
 1. Copy the script somewhere stable and make it executable:
 

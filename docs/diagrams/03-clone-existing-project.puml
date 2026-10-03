@@ -1,0 +1,58 @@
+@startuml 03-clone-existing-project
+title Scenario 3: Open an existing catalog-using project on the new machine
+
+actor User
+participant "git" as Git
+participant "Claude Code\nsession" as Claude
+participant "catalog.sh" as Cat
+participant "GitHub\n(Eminakkoc/skills)" as Index
+database "<project>/.claude\n+ .mcp.json\n(committed)" as Proj
+database "<U+007E>/.claude" as Home
+
+User -> Git : git clone <project>
+Git --> Proj : .claude/skills, .claude/hooks,\n.claude/settings.json, .mcp.json,\n.claude/catalog.lock.json
+
+User -> Claude : start claude in the project
+Claude --> User : trust this folder?
+User -> Claude : yes
+Claude -> Proj : load project skills and hooks\n(already copied, nothing to fetch)
+Claude --> User : approve project MCP servers from .mcp.json?
+Claude --> User : install plugins from extraKnownMarketplaces\n+ enabledPlugins?
+User -> Claude : approve
+
+note over Claude, Home
+  Copied files travel with the repo, but CLI tools that items
+  require (e.g. agent-browser) may be missing on this machine.
+  "catalog doctor" checks for that.
+end note
+
+== catalog doctor ==
+User -> Claude : "check this project's catalog items"
+Claude -> Cat : catalog doctor --dry-run
+Cat -> Proj : read .claude/catalog.lock.json
+Cat -> Index : fetch catalog.json @ lock's index SHA
+Cat -> Cat : collect "requires" of installed items
+loop each required tool
+  alt bin on PATH
+    Cat -> Cat : ok
+  else missing
+    Cat --> Claude : missing <tool>
+    Claude --> User : install it?
+    User -> Claude : yes
+    Claude -> Cat : catalog doctor --yes
+    Cat -> Home : install tool @ pinned,\nrecord in <U+007E>/.claude/catalog.lock.json
+  end
+end
+Cat -> Proj : verify every file in the lock still exists
+Cat --> Claude : report: ok / missing / locally edited
+Claude --> User : project ready
+
+== Optional: pick up newer pins ==
+User -> Claude : "update this project's catalog items"
+Claude -> Cat : catalog update --dry-run
+Cat -> Index : index @ main
+Cat --> Claude : composition-patterns a1b2c3d -> f9e8d7c
+Claude --> User : apply?
+User -> Claude : yes
+Claude -> Cat : catalog update --yes
+@enduml
