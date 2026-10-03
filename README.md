@@ -17,8 +17,9 @@ Inside Claude Code:
 
 Or, to set up a new machine with **every** plugin I use (including ones from
 other marketplaces, like `vercel@claude-plugins-official`), run `./install.sh`
-from a shell. It reads `plugins.json`, adds any missing marketplaces, and
-installs each plugin at user scope; re-running it is safe. Add `--local` to
+from a shell. It reads `plugins.json`, installs the CLI tools plugins need
+(e.g. `plantuml-mcp-server` for millwright-inspector's plantuml MCP), adds any
+missing marketplaces, and installs each plugin at user scope; re-running it is safe. Add `--local` to
 register this checkout instead of GitHub, so edits take effect without pushing.
 
 When you install or remove a plugin, update `plugins.json` to match.
@@ -36,7 +37,7 @@ Hooks need `jq` (`brew install jq`).
 skills/<name>/SKILL.md   my own skills, one folder each, folder = skill name
 hooks/hooks.json         wires the hook scripts into the plugin
 hooks/<name>/            one hook per folder: script + README
-plugins.json             every plugin I use, as plugin@marketplace, plus marketplace sources
+plugins.json             every plugin I use (plugin@marketplace), marketplace sources, and CLI tools they need
 install.sh               installs everything in plugins.json on a new machine
 ```
 
