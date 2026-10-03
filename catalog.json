@@ -20,8 +20,13 @@
       "scope": "user",
       "source": "self",
       "path": "hooks/expand-ebse",
-      "hook": { "event": "UserPromptSubmit", "script": "expand-ebse.sh" },
-      "requires": ["jq"],
+      "hook": {
+        "event": "UserPromptSubmit",
+        "script": "expand-ebse.sh"
+      },
+      "requires": [
+        "jq"
+      ],
       "description": "`ebse` → explain briefly in simple language and with examples"
     },
     "expand-wtru": {
@@ -29,8 +34,13 @@
       "scope": "user",
       "source": "self",
       "path": "hooks/expand-wtru",
-      "hook": { "event": "UserPromptSubmit", "script": "expand-wtru.sh" },
-      "requires": ["jq"],
+      "hook": {
+        "event": "UserPromptSubmit",
+        "script": "expand-wtru.sh"
+      },
+      "requires": [
+        "jq"
+      ],
       "description": "`wtru` → walk through items one at a time"
     },
     "expand-exios": {
@@ -38,8 +48,13 @@
       "scope": "user",
       "source": "self",
       "path": "hooks/expand-exios",
-      "hook": { "event": "UserPromptSubmit", "script": "expand-exios.sh" },
-      "requires": ["jq"],
+      "hook": {
+        "event": "UserPromptSubmit",
+        "script": "expand-exios.sh"
+      },
+      "requires": [
+        "jq"
+      ],
       "description": "`exios` → explain in one sentence"
     },
     "expand-exi2s": {
@@ -47,8 +62,13 @@
       "scope": "user",
       "source": "self",
       "path": "hooks/expand-exi2s",
-      "hook": { "event": "UserPromptSubmit", "script": "expand-exi2s.sh" },
-      "requires": ["jq"],
+      "hook": {
+        "event": "UserPromptSubmit",
+        "script": "expand-exi2s.sh"
+      },
+      "requires": [
+        "jq"
+      ],
       "description": "`exi2s` → explain in two sentences"
     },
     "expand-ruview": {
@@ -56,8 +76,13 @@
       "scope": "user",
       "source": "self",
       "path": "hooks/expand-ruview",
-      "hook": { "event": "UserPromptSubmit", "script": "expand-ruview.sh" },
-      "requires": ["jq"],
+      "hook": {
+        "event": "UserPromptSubmit",
+        "script": "expand-ruview.sh"
+      },
+      "requires": [
+        "jq"
+      ],
       "description": "`ruview` → file-review request"
     },
     "web-design-guidelines": {
@@ -86,7 +111,9 @@
       "scope": "project",
       "source": "agent-browser",
       "path": "skills/agent-browser",
-      "requires": ["agent-browser-cli"],
+      "requires": [
+        "agent-browser-cli"
+      ],
       "description": "Vercel: browser automation through the agent-browser CLI"
     },
     "modern-web-guidance": {
@@ -119,7 +146,9 @@
       "kind": "plugin",
       "scope": "user",
       "source": "millwright-inspector",
-      "requires": ["plantuml-mcp-server"],
+      "requires": [
+        "plantuml-mcp-server"
+      ],
       "description": "Millwright/inspector development workflow"
     },
     "vercel": {
@@ -152,9 +181,42 @@
     }
   },
   "bundles": {
-    "personal": ["catalog", "expand-ebse", "expand-wtru", "expand-exios", "expand-exi2s", "expand-ruview", "superpowers", "context7", "millwright-inspector-development-machine"],
-    "web": ["web-images", "web-design-guidelines", "composition-patterns", "react-view-transitions", "modern-web-guidance", "agent-browser"],
-    "react": ["composition-patterns", "react-view-transitions"],
-    "vercel": ["vercel", "web-design-guidelines"]
+    "personal": [
+      "catalog",
+      "expand-ebse",
+      "expand-wtru",
+      "expand-exios",
+      "expand-exi2s",
+      "expand-ruview",
+      "superpowers",
+      "context7",
+      "millwright-inspector-development-machine"
+    ],
+    "web": [
+      "web-images",
+      "web-design-guidelines",
+      "composition-patterns",
+      "react-view-transitions",
+      "modern-web-guidance",
+      "agent-browser"
+    ],
+    "react": [
+      "composition-patterns",
+      "react-view-transitions"
+    ],
+    "vercel": [
+      "vercel",
+      "web-design-guidelines"
+    ],
+    "web-frontend": [
+      "web-images",
+      "web-design-guidelines",
+      "composition-patterns",
+      "react-view-transitions",
+      "modern-web-guidance",
+      "agent-browser",
+      "vercel",
+      "figma"
+    ]
   }
 }

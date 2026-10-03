@@ -65,7 +65,7 @@ you pass `--force`.
 | `agent-browser-cli` | tool | user | agent-browser | CLI behind the agent-browser skill |
 | `plantuml-mcp-server` | tool | user | plantuml-mcp-server | CLI behind millwright-inspector's plantuml MCP |
 
-Bundles: `bundle:personal` (catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine); `bundle:web` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser); `bundle:react` (composition-patterns, react-view-transitions); `bundle:vercel` (vercel, web-design-guidelines)
+Bundles: `bundle:personal` (catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine); `bundle:web` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser); `bundle:react` (composition-patterns, react-view-transitions); `bundle:vercel` (vercel, web-design-guidelines); `bundle:web-frontend` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser, vercel, figma)
 <!-- catalog:end -->
 
 Vercel skills already shipped by the `vercel` plugin (react-best-practices,
