@@ -1,0 +1,6 @@
+{
+  "scope": "project",
+  "source": "vercel-agent-skills",
+  "path": "skills/web-design-guidelines",
+  "description": "Vercel: review UI code against web design guidelines"
+}

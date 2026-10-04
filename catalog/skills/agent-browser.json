@@ -1,0 +1,9 @@
+{
+  "scope": "project",
+  "source": "agent-browser",
+  "path": "skills/agent-browser",
+  "requires": [
+    "agent-browser-cli"
+  ],
+  "description": "Vercel: browser automation through the agent-browser CLI"
+}

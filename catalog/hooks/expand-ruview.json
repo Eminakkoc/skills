@@ -1,0 +1,13 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "hooks/expand-ruview",
+  "hook": {
+    "event": "UserPromptSubmit",
+    "script": "expand-ruview.sh"
+  },
+  "requires": [
+    "jq"
+  ],
+  "description": "`ruview` → file-review request"
+}

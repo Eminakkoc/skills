@@ -1,0 +1,11 @@
+{
+  "description": "Web skills for any web project: images, design guidelines, React patterns, modern web guidance, browser automation",
+  "items": [
+    "web-images",
+    "web-design-guidelines",
+    "composition-patterns",
+    "react-view-transitions",
+    "modern-web-guidance",
+    "agent-browser"
+  ]
+}

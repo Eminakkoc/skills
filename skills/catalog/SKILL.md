@@ -6,7 +6,8 @@ description: Use when the user wants to add, remove, list, update or check skill
 # catalog
 
 The user's skills, rules, hooks, MCP servers, plugins and CLI tools are listed in an
-index repo (`Eminakkoc/skills`): `catalog.json` lists the items, `sources.json`
+index repo (`Eminakkoc/skills`): `catalog/<type>/<name>.json` holds one file per item
+(and `catalog/bundles/` one per bundle), `sources.json`
 pins third-party upstreams. The `catalog` command (`~/.local/bin/catalog`)
 does all installing, removing and updating.
 

@@ -102,9 +102,43 @@ load_index() {
     INDEX_DIR=$(fetch_repo "$INDEX_REPO" "$INDEX_SHA")
     INDEX_ID="$INDEX_REPO"
   fi
-  CATALOG="$INDEX_DIR/catalog.json"
   SOURCES="$INDEX_DIR/sources.json"
-  [ -f "$CATALOG" ] && [ -f "$SOURCES" ] || die "no catalog.json/sources.json in $INDEX_DIR"
+  [ -d "$INDEX_DIR/catalog" ] && [ -f "$SOURCES" ] || die "no catalog/ or sources.json in $INDEX_DIR"
+  build_catalog
+}
+
+# The index keeps one file per item, catalog/<type>/<name>.json, and one per
+# bundle, catalog/bundles/<name>.json. Everything else in this script reads a
+# single combined document, built here into a temp file:
+#   {version, items: {<name>: {kind, ...}}, bundles: {<name>: {description, items}}}
+# The folder sets the kind and the file name sets the name, so neither is
+# written inside the files. Item names must be unique across all types.
+build_catalog() {
+  local files
+  files=$(find "$INDEX_DIR/catalog" -mindepth 2 -maxdepth 2 -name '*.json' | LC_ALL=C sort)
+  [ -n "$files" ] || die "no item files in $INDEX_DIR/catalog"
+  CATALOG=$(mktemp "${TMPDIR:-/tmp}/catalog.XXXXXX")
+  trap 'rm -f "$CATALOG"' EXIT
+  # shellcheck disable=SC2086 # file paths come from find and contain no spaces by convention
+  jq -n --arg root "$INDEX_DIR/catalog/" '
+    {skills: "skill", rules: "rule", hooks: "hook", plugins: "plugin", mcp: "mcp", tools: "tool"} as $kinds
+    | reduce inputs as $x ({version: 1, items: {}, bundles: {}};
+        (input_filename | ltrimstr($root) | split("/")) as [$dir, $file]
+        | ($file | rtrimstr(".json")) as $name
+        | if $dir == "bundles" then
+            .bundles[$name] = {description: ($x.description // ""), items: ($x.items // [])}
+          elif $kinds[$dir] == null then
+            error("catalog/\($dir)/\($file): unknown folder (expected bundles, \($kinds | keys | join(", ")))")
+          elif .items[$name] then
+            error("catalog/\($dir)/\($file): the name \($name) is already used by a \(.items[$name].kind)")
+          else
+            .items[$name] = ({kind: $kinds[$dir]} + ($x | del(.kind)))
+          end)
+    | . as $c
+    | [$c.bundles | to_entries[] | .key as $b | .value.items[] | select($c.items[.] == null) | "\($b): \(.)"] as $bad
+    | if $bad == [] then $c else error("bundles list unknown items: \($bad | join(", "))") end
+    ' $files >"$CATALOG" 2>"$CATALOG.err" || { cat "$CATALOG.err" >&2; rm -f "$CATALOG.err"; die "invalid catalog"; }
+  rm -f "$CATALOG.err"
 }
 
 # Maintenance commands edit the index, so they need a local checkout.
@@ -112,7 +146,7 @@ load_maint_index() {
   if [ -z "$LOCAL_INDEX" ]; then
     local top
     top=$(git rev-parse --show-toplevel 2>/dev/null || true)
-    if [ -n "$top" ] && [ -f "$top/catalog.json" ] && [ -f "$top/sources.json" ]; then
+    if [ -n "$top" ] && [ -d "$top/catalog" ] && [ -f "$top/sources.json" ]; then
       LOCAL_INDEX="$top"
     else
       die "run inside a checkout of the index repo, or pass --local PATH"
@@ -133,7 +167,7 @@ expand_names() { # args -> item names, one per line, bundles expanded
       bundle:*)
         b=${a#bundle:}
         jq -e --arg b "$b" '.bundles | has($b)' "$CATALOG" >/dev/null || die "unknown bundle: $b"
-        jq -r --arg b "$b" '.bundles[$b][]' "$CATALOG"
+        jq -r --arg b "$b" '.bundles[$b].items[]' "$CATALOG"
         ;;
       *)
         has_item "$a" || die "unknown item: $a (see: catalog list)"
@@ -827,7 +861,9 @@ cmd_readme() {
         else ($src[0].sources[$s] | (.repo // .package // .marketplaceRepo // .url // $s)) end) as $from
      | "| `\(.key)` | \(.value.kind) | \(.value.scope) | \($from) | \(.value.description) |"),
     "",
-    "Bundles: " + (.bundles | to_entries | map("`bundle:\(.key)` (\(.value | join(", ")))") | join("; "))
+    "| Bundle | What it is for | Items |",
+    "|---|---|---|",
+    (.bundles | to_entries[] | "| `bundle:\(.key)` | \(.value.description) | \(.value.items | join(", ")) |")
   ' "$CATALOG" >"$table"
   tmp=$(mktemp)
   awk -v table="$table" '

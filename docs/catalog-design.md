@@ -1,6 +1,6 @@
 # Catalog design
 
-Status: implemented 2026-10-03 (`catalog.sh`, `catalog.json`, `sources.json`, `skills/catalog`).
+Status: implemented 2026-10-03 (`catalog.sh`, `catalog/`, `sources.json`, `skills/catalog`).
 
 ## Goal
 
@@ -16,7 +16,7 @@ and checked for upstream updates on demand.
 |---|---|
 | 1 | Every item has a `scope`: `user` (goes into `~/.claude`) or `project` (goes into a project's `.claude/`). The fetcher refuses to put a `user` item into a project unless forced (`--force`). |
 | 2 | The marketplace is retired. `.claude-plugin/` and `hooks/hooks.json` are deleted. Wrapped third-party skills become plain references; real third-party plugins stay plugins, the index only records where they come from. |
-| 3 | `sources.json` has one entry per upstream repo/package with a single version. `catalog.json` has one entry per item, naming its source and path. Update checks report only the item paths that actually changed. |
+| 3 | `sources.json` has one entry per upstream repo/package with a single version. `catalog/` has one file per item, naming its source and path. Update checks report only the item paths that actually changed. |
 | 4 | A source is either `pinned` (the fetcher enforces the version) or `reviewed` (records the last version I checked; the index cannot enforce it). Sources with no version (remote MCPs) have neither. |
 | 5 | A `catalog.sh` script does all file work; a thin user-scope `catalog` skill teaches Claude when and how to run it. Claude never edits settings or lock files by hand. |
 | 6 | Updates flow in two steps: (a) index pins move only through a PR I approve, after a risk-scaled review; (b) projects pick up new pins only when I run `catalog update` in them and confirm. |
@@ -25,94 +25,86 @@ and checked for upstream updates on demand.
 ## Repo layout (after)
 
 ```
-catalog.json          every installable item (mine and third-party)
+catalog/              the catalog: one small JSON file per item and per bundle
+  skills/<name>.json    the folder sets the kind, the file name sets the name
+  rules/<name>.json
+  hooks/<name>.json
+  plugins/<name>.json
+  mcp/<name>.json
+  tools/<name>.json
+  bundles/<name>.json   {description, items}
 sources.json          third-party upstreams: location, version, risk
 catalog.sh            the fetcher / updater (replaces install.sh)
-skills/<name>/        my own skills (unchanged)
+skills/<name>/        my own skills' content
   catalog/SKILL.md    the bootstrap skill that drives catalog.sh
-hooks/<name>/         my own hooks: script + README (unchanged, minus hooks.json)
+hooks/<name>/         my own hooks: script + README
 rules/<name>.md       my own rules
 docs/                 this design
-README.md             catalog table generated from catalog.json
+README.md             catalog table generated from catalog/
 ```
 
-Removed: `.claude-plugin/`, `hooks/hooks.json`, `plugins.json`, `install.sh`.
+Removed: `.claude-plugin/`, `hooks/hooks.json`, `plugins.json`, `install.sh`,
+and (2026-10-04) the single `catalog.json`, split into `catalog/`.
 
-## `catalog.json`
+## `catalog/`
 
-Illustrative excerpt (the real file is `catalog.json`; here `context7` is shown
-as a direct remote MCP to illustrate the `mcp` kind, while the real catalog
-keeps it as a plugin).
+Each item is a file `catalog/<type folder>/<name>.json`. The folder gives the
+item's kind (`skills` → `skill`, `rules` → `rule`, `hooks` → `hook`, `plugins`
+→ `plugin`, `mcp` → `mcp`, `tools` → `tool`) and the file name gives its name,
+so neither is written inside the file. Names must be unique across all types,
+because commands take bare names (`catalog add context7`).
 
+```
+catalog/hooks/expand-ebse.json
+```
 ```json
 {
-  "version": 1,
-  "items": {
-    "web-images": {
-      "kind": "skill",
-      "scope": "project",
-      "source": "self",
-      "path": "skills/web-images",
-      "description": "Image performance: sizing, srcset, formats, LCP, layout shift"
-    },
-    "expand-ebse": {
-      "kind": "hook",
-      "scope": "user",
-      "source": "self",
-      "path": "hooks/expand-ebse",
-      "hook": { "event": "UserPromptSubmit", "script": "expand-ebse.sh" },
-      "requires": ["jq"],
-      "description": "Expands `ebse` to 'explain briefly in simple language and with examples'"
-    },
-    "composition-patterns": {
-      "kind": "skill",
-      "scope": "project",
-      "source": "vercel-agent-skills",
-      "path": "skills/composition-patterns",
-      "description": "React composition patterns"
-    },
-    "agent-browser": {
-      "kind": "skill",
-      "scope": "project",
-      "source": "agent-browser",
-      "path": "skills/agent-browser",
-      "requires": ["agent-browser-cli"],
-      "description": "Browser automation"
-    },
-    "superpowers": {
-      "kind": "plugin",
-      "scope": "user",
-      "source": "superpowers",
-      "description": "Process skills: brainstorming, TDD, planning"
-    },
-    "context7": {
-      "kind": "mcp",
-      "scope": "user",
-      "source": "context7",
-      "mcp": { "type": "http", "url": "https://mcp.context7.com/mcp" },
-      "description": "Current library docs"
-    },
-    "plantuml-mcp-server": {
-      "kind": "tool",
-      "scope": "user",
-      "source": "plantuml-mcp-server",
-      "install": "npm install -g plantuml-mcp-server@{version}",
-      "bin": "plantuml-mcp-server",
-      "description": "CLI behind millwright-inspector's plantuml MCP"
-    }
-  },
-  "bundles": {
-    "personal": ["expand-ebse", "expand-wtru", "expand-exios", "expand-exi2s", "expand-ruview", "superpowers", "context7"],
-    "web": ["web-images", "web-design-guidelines", "composition-patterns", "react-view-transitions", "agent-browser"]
-  }
+  "scope": "user",
+  "source": "self",
+  "path": "hooks/expand-ebse",
+  "hook": { "event": "UserPromptSubmit", "script": "expand-ebse.sh" },
+  "requires": ["jq"],
+  "description": "`ebse` → explain briefly in simple language and with examples"
 }
 ```
+```
+catalog/skills/agent-browser.json
+```
+```json
+{
+  "scope": "project",
+  "source": "agent-browser",
+  "path": "skills/agent-browser",
+  "requires": ["agent-browser-cli"],
+  "description": "Vercel: browser automation through the agent-browser CLI"
+}
+```
+```
+catalog/bundles/web-frontend.json
+```
+```json
+{
+  "description": "Frontend projects: the web bundle plus the Vercel and Figma plugins",
+  "items": ["web-images", "web-design-guidelines", "composition-patterns", "react-view-transitions",
+            "modern-web-guidance", "agent-browser", "vercel", "figma"]
+}
+```
+
+`catalog.sh` reads every file and assembles one in-memory document
+(`{items: {<name>: {kind, ...}}, bundles: {<name>: {description, items}}}`),
+which every command works from; `catalog list --json` prints its items. It
+stops with an error naming the file if a folder is unknown, a name is used
+twice, or a bundle lists an item that doesn't exist.
+
+An `mcp` item would look like
+`{"scope": "user", "source": "context7", "mcp": {"type": "http", "url": "https://mcp.context7.com/mcp"}, ...}`;
+none exist yet (`context7` is installed as a plugin).
 
 ### Item fields
 
 | Field | Required | Meaning |
 |---|---|---|
-| `kind` | yes | `skill`, `rule`, `hook`, `mcp`, `plugin`, `tool` |
+| kind | — | Not a field: set by the folder (`skill`, `rule`, `hook`, `mcp`, `plugin`, `tool`) |
 | `scope` | yes | `user` or `project` |
 | `source` | yes | `self` (this repo) or a key in `sources.json` |
 | `path` | skill, rule, hook | Directory (file, for a rule) inside the source repo |
@@ -252,7 +244,7 @@ it from a checkout instead.
 | `doctor` | Checks both lock files: files present, local edits, plugins installed, tools and `requires` on PATH. Offers to install missing tools. Exit 1 on problems. |
 | `check-updates [--json]` | Index maintenance: compares every source's `pinned`/`reviewed` with upstream and outputs a report (see below). Read-only. |
 | `bump <source> [<version>]` | Index maintenance: moves a source's pin (or `reviewed`) to the given or latest version and updates the date. |
-| `readme` | Regenerates the README catalog table from `catalog.json`. |
+| `readme` | Regenerates the README catalog and bundle tables from `catalog/`. |
 
 Options: `--user` (target `~/.claude`), `--force` (put a `user` item in a
 project, replace files the catalog didn't install, skip the local-edit prompt),
@@ -330,7 +322,7 @@ User scope, installed by `setup`. It tells Claude:
 
 ## Migration from the current plugin setup
 
-1. Write `catalog.json` and `sources.json` from `.claude-plugin/marketplace.json`,
+1. Write the catalog and `sources.json` from `.claude-plugin/marketplace.json`,
    `plugins.json` and `hooks/hooks.json`, pinning every third-party source at
    its current upstream version. Resolve `modern-web-guidance`'s skill paths
    (currently installed as a whole plugin) into individual items.

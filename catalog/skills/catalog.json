@@ -1,0 +1,6 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "skills/catalog",
+  "description": "Drives catalog.sh: add, remove, update and check items from this index"
+}

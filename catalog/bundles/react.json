@@ -1,0 +1,7 @@
+{
+  "description": "React-only skills: composition patterns and view transitions",
+  "items": [
+    "composition-patterns",
+    "react-view-transitions"
+  ]
+}

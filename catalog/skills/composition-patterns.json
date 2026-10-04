@@ -1,0 +1,6 @@
+{
+  "scope": "project",
+  "source": "vercel-agent-skills",
+  "path": "skills/composition-patterns",
+  "description": "Vercel: React composition patterns"
+}

@@ -1,0 +1,13 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "hooks/expand-wtru",
+  "hook": {
+    "event": "UserPromptSubmit",
+    "script": "expand-wtru.sh"
+  },
+  "requires": [
+    "jq"
+  ],
+  "description": "`wtru` → walk through items one at a time"
+}

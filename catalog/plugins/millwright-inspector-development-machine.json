@@ -1,0 +1,8 @@
+{
+  "scope": "user",
+  "source": "millwright-inspector",
+  "requires": [
+    "plantuml-mcp-server"
+  ],
+  "description": "Millwright/inspector development workflow"
+}

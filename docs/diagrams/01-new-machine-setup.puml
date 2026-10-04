@@ -25,7 +25,7 @@ end
 Cat -> Index : resolve main -> commit SHA
 Index --> Cat : index SHA
 Cat -> Index : download tarball @ index SHA
-Index --> Cat : catalog.json, sources.json,\nskills/, hooks/
+Index --> Cat : catalog/, sources.json,\nskills/, hooks/, rules/
 Cat -> Bin : install self as "catalog"
 
 == Plan ==

@@ -1,0 +1,13 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "hooks/expand-exi2s",
+  "hook": {
+    "event": "UserPromptSubmit",
+    "script": "expand-exi2s.sh"
+  },
+  "requires": [
+    "jq"
+  ],
+  "description": "`exi2s` → explain in two sentences"
+}

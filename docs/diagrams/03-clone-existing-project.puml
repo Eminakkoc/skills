@@ -30,7 +30,7 @@ end note
 User -> Claude : "check this project's catalog items"
 Claude -> Cat : catalog doctor --dry-run
 Cat -> Proj : read .claude/catalog.lock.json
-Cat -> Index : fetch catalog.json @ lock's index SHA
+Cat -> Index : fetch catalog/ @ lock's index SHA
 Cat -> Cat : collect "requires" of installed items
 loop each required tool
   alt bin on PATH

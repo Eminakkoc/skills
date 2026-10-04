@@ -1,0 +1,7 @@
+{
+  "scope": "user",
+  "source": "plantuml-mcp-server",
+  "bin": "plantuml-mcp-server",
+  "install": "npm install -g plantuml-mcp-server@{version}",
+  "description": "CLI behind millwright-inspector's plantuml MCP"
+}

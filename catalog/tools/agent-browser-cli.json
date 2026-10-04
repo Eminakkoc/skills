@@ -1,0 +1,7 @@
+{
+  "scope": "user",
+  "source": "agent-browser-cli",
+  "bin": "agent-browser",
+  "install": "npm install -g agent-browser@{version} && agent-browser install",
+  "description": "CLI behind the agent-browser skill"
+}

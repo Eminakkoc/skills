@@ -1,0 +1,7 @@
+{
+  "description": "Projects deployed on Vercel: the Vercel plugin plus design guidelines",
+  "items": [
+    "vercel",
+    "web-design-guidelines"
+  ]
+}

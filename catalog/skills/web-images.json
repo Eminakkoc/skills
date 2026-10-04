@@ -1,0 +1,6 @@
+{
+  "scope": "project",
+  "source": "self",
+  "path": "skills/web-images",
+  "description": "Image performance: sizing, srcset, formats, LCP, layout shift"
+}

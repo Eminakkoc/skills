@@ -67,7 +67,13 @@ you pass `--force`.
 | `agent-browser-cli` | tool | user | agent-browser | CLI behind the agent-browser skill |
 | `plantuml-mcp-server` | tool | user | plantuml-mcp-server | CLI behind millwright-inspector's plantuml MCP |
 
-Bundles: `bundle:personal` (catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine, context7-docs); `bundle:web` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser); `bundle:react` (composition-patterns, react-view-transitions); `bundle:vercel` (vercel, web-design-guidelines); `bundle:web-frontend` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser, vercel, figma)
+| Bundle | What it is for | Items |
+|---|---|---|
+| `bundle:personal` | Everything I want on every machine: prompt shortcuts, the catalog skill, personal plugins and rules | catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine, context7-docs |
+| `bundle:react` | React-only skills: composition patterns and view transitions | composition-patterns, react-view-transitions |
+| `bundle:vercel` | Projects deployed on Vercel: the Vercel plugin plus design guidelines | vercel, web-design-guidelines |
+| `bundle:web-frontend` | Frontend projects: the web bundle plus the Vercel and Figma plugins | web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser, vercel, figma |
+| `bundle:web` | Web skills for any web project: images, design guidelines, React patterns, modern web guidance, browser automation | web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser |
 <!-- catalog:end -->
 
 Vercel skills already shipped by the `vercel` plugin (react-best-practices,
@@ -76,7 +82,9 @@ next-*, ai-sdk, workflow, vercel-cli, shadcn) are left out to avoid duplicates.
 ## Layout
 
 ```
-catalog.json          every installable item: kind, scope, source, path
+catalog/              one small JSON file per item, in a folder per type:
+  skills/ rules/ hooks/ plugins/ mcp/ tools/   <name>.json: scope, source, path, description
+  bundles/                                     <name>.json: description + list of items
 sources.json          third-party upstreams: location, pinned/reviewed version, risk
 catalog.sh            the catalog command (install, update, doctor, maintenance)
 skills/<name>/        my own skills, one folder each
@@ -87,20 +95,27 @@ docs/                 design and sequence diagrams
 
 ## Adding things
 
-- **My own skill:** create `skills/<name>/SKILL.md`, then add an item with
-  `"source": "self"` and `"path": "skills/<name>"` to `catalog.json`.
-- **My own rule:** create `rules/<name>.md`, then an item with
-  `"kind": "rule"` and `"path": "rules/<name>.md"`. It installs as
-  `.claude/rules/<name>.md` (user scope: `~/.claude/rules/`).
+Every item is one file, `catalog/<type>/<name>.json`. The folder is its type
+and the file name is its name (unique across all types). Copy a neighbour
+and edit it.
+
+- **My own skill:** create `skills/<name>/SKILL.md`, then
+  `catalog/skills/<name>.json` with `"source": "self"` and `"path": "skills/<name>"`.
+- **My own rule:** create `rules/<name>.md`, then `catalog/rules/<name>.json`
+  with `"path": "rules/<name>.md"`. It installs as `.claude/rules/<name>.md`
+  (user scope: `~/.claude/rules/`).
 - **My own hook:** add `hooks/<name>/<name>.sh` (executable) and a README, then
-  an item with `"kind": "hook"` and `"hook": {"event": ..., "script": ...}`.
+  `catalog/hooks/<name>.json` with `"hook": {"event": ..., "script": ...}`.
 - **A third-party skill:** add (or reuse) a `github` source in `sources.json`
-  pinned to a commit SHA, then an item pointing at its `path` in that repo.
+  pinned to a commit SHA, then `catalog/skills/<name>.json` pointing at its
+  `path` in that repo.
 - **A third-party plugin:** add a `plugin` source (marketplace, its repo, plugin
-  name, `reviewed` version), then an item with `"kind": "plugin"`.
-- **A CLI tool something needs:** add an `npm`/`pypi` source and a `tool` item
-  with `bin` and `install` (`{version}` is replaced with the pin); list it in
-  the dependent item's `requires`.
+  name, `reviewed` version), then `catalog/plugins/<name>.json`.
+- **A CLI tool something needs:** add an `npm`/`pypi` source and
+  `catalog/tools/<name>.json` with `bin` and `install` (`{version}` is replaced
+  with the pin); list it in the dependent item's `requires`.
+- **A bundle:** `catalog/bundles/<name>.json` with a `description` and the
+  `items` it installs.
 - **A third-party skill I want to modify:** copy it into `skills/<name>/` with a
   `SOURCE.md` noting the upstream URL and commit, and make it a `self` item.
 

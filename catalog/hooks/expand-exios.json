@@ -1,0 +1,13 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "hooks/expand-exios",
+  "hook": {
+    "event": "UserPromptSubmit",
+    "script": "expand-exios.sh"
+  },
+  "requires": [
+    "jq"
+  ],
+  "description": "`exios` → explain in one sentence"
+}

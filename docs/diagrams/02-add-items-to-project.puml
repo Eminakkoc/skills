@@ -16,7 +16,7 @@ Skill --> Claude : run catalog.sh, never edit\nsettings or lock files by hand
 Claude -> Cat : catalog add bundle:web
 
 == Resolve ==
-Cat -> Index : resolve main -> SHA, fetch catalog.json + sources.json
+Cat -> Index : resolve main -> SHA, fetch catalog/ + sources.json
 Index --> Cat : index @ SHA
 Cat -> Cat : expand bundle into items
 Cat -> Cat : check scope of each item

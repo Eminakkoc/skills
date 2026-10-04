@@ -1,0 +1,13 @@
+{
+  "description": "Frontend projects: the web bundle plus the Vercel and Figma plugins",
+  "items": [
+    "web-images",
+    "web-design-guidelines",
+    "composition-patterns",
+    "react-view-transitions",
+    "modern-web-guidance",
+    "agent-browser",
+    "vercel",
+    "figma"
+  ]
+}

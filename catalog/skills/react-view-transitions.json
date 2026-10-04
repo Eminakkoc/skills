@@ -1,0 +1,6 @@
+{
+  "scope": "project",
+  "source": "vercel-agent-skills",
+  "path": "skills/react-view-transitions",
+  "description": "Vercel: React view transitions"
+}

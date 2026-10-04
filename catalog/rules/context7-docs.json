@@ -1,0 +1,9 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "rules/context7-docs.md",
+  "requires": [
+    "context7"
+  ],
+  "description": "Rule: fetch library/framework docs through Context7 instead of relying on memory"
+}
