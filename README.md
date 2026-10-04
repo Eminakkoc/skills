@@ -1,6 +1,6 @@
 # skills
 
-An index of the Claude Code skills, hooks, MCP servers, plugins and CLI tools I
+An index of the Claude Code skills, rules, hooks, MCP servers, plugins and CLI tools I
 use. Any machine or project pulls only what it needs from here, without cloning
 this repo or installing it as a plugin. Third-party items are referenced at a
 pinned version, not copied, and checked for upstream updates on demand.
@@ -55,6 +55,7 @@ you pass `--force`.
 | `millwright-inspector-development-machine` | plugin | user | Eminakkoc/Millwright-Inspector-Development-Machine | Millwright/inspector development workflow |
 | `superpowers` | plugin | user | anthropics/claude-plugins-official | Process skills: brainstorming, TDD, planning, debugging |
 | `vercel` | plugin | project | anthropics/claude-plugins-official | Vercel platform skills, agents and commands |
+| `context7-docs` | rule | user | this repo | Rule: fetch library/framework docs through Context7 instead of relying on memory |
 | `agent-browser` | skill | project | vercel-labs/agent-browser | Vercel: browser automation through the agent-browser CLI |
 | `catalog` | skill | user | this repo | Drives catalog.sh: add, remove, update and check items from this index |
 | `chrome-extensions` | skill | project | GoogleChrome/modern-web-guidance | Google Chrome: building and publishing Chrome extensions |
@@ -66,7 +67,7 @@ you pass `--force`.
 | `agent-browser-cli` | tool | user | agent-browser | CLI behind the agent-browser skill |
 | `plantuml-mcp-server` | tool | user | plantuml-mcp-server | CLI behind millwright-inspector's plantuml MCP |
 
-Bundles: `bundle:personal` (catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine); `bundle:web` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser); `bundle:react` (composition-patterns, react-view-transitions); `bundle:vercel` (vercel, web-design-guidelines); `bundle:web-frontend` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser, vercel, figma)
+Bundles: `bundle:personal` (catalog, expand-ebse, expand-wtru, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine, context7-docs); `bundle:web` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser); `bundle:react` (composition-patterns, react-view-transitions); `bundle:vercel` (vercel, web-design-guidelines); `bundle:web-frontend` (web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser, vercel, figma)
 <!-- catalog:end -->
 
 Vercel skills already shipped by the `vercel` plugin (react-best-practices,
@@ -80,6 +81,7 @@ sources.json          third-party upstreams: location, pinned/reviewed version, 
 catalog.sh            the catalog command (install, update, doctor, maintenance)
 skills/<name>/        my own skills, one folder each
 hooks/<name>/         my own hooks: script + README
+rules/<name>.md       my own rules (instructions loaded into every session)
 docs/                 design and sequence diagrams
 ```
 
@@ -87,6 +89,9 @@ docs/                 design and sequence diagrams
 
 - **My own skill:** create `skills/<name>/SKILL.md`, then add an item with
   `"source": "self"` and `"path": "skills/<name>"` to `catalog.json`.
+- **My own rule:** create `rules/<name>.md`, then an item with
+  `"kind": "rule"` and `"path": "rules/<name>.md"`. It installs as
+  `.claude/rules/<name>.md` (user scope: `~/.claude/rules/`).
 - **My own hook:** add `hooks/<name>/<name>.sh` (executable) and a README, then
   an item with `"kind": "hook"` and `"hook": {"event": ..., "script": ...}`.
 - **A third-party skill:** add (or reuse) a `github` source in `sources.json`

@@ -178,6 +178,16 @@
       "bin": "agent-browser",
       "install": "npm install -g agent-browser@{version} && agent-browser install",
       "description": "CLI behind the agent-browser skill"
+    },
+    "context7-docs": {
+      "kind": "rule",
+      "scope": "user",
+      "source": "self",
+      "path": "rules/context7-docs.md",
+      "requires": [
+        "context7"
+      ],
+      "description": "Rule: fetch library/framework docs through Context7 instead of relying on memory"
     }
   },
   "bundles": {
@@ -190,7 +200,8 @@
       "expand-ruview",
       "superpowers",
       "context7",
-      "millwright-inspector-development-machine"
+      "millwright-inspector-development-machine",
+      "context7-docs"
     ],
     "web": [
       "web-images",

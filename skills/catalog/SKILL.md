@@ -1,17 +1,18 @@
 ---
 name: catalog
-description: Use when the user wants to add, remove, list, update or check skills, hooks, MCP servers, plugins or CLI tools from their catalog (the Eminakkoc/skills index) — in this project or in ~/.claude — or asks to "check catalog updates" for the index's third-party sources.
+description: Use when the user wants to add, remove, list, update or check skills, rules, hooks, MCP servers, plugins or CLI tools from their catalog (the Eminakkoc/skills index) — in this project or in ~/.claude — or asks to "check catalog updates" for the index's third-party sources.
 ---
 
 # catalog
 
-The user's skills, hooks, MCP servers, plugins and CLI tools are listed in an
+The user's skills, rules, hooks, MCP servers, plugins and CLI tools are listed in an
 index repo (`Eminakkoc/skills`): `catalog.json` lists the items, `sources.json`
 pins third-party upstreams. The `catalog` command (`~/.local/bin/catalog`)
 does all installing, removing and updating.
 
 **Never edit `.claude/settings.json`, `.mcp.json`, `.claude/skills/`,
-`.claude/hooks/` or any `catalog.lock.json` by hand for catalog items.** Run
+`.claude/rules/`, `.claude/hooks/` or any `catalog.lock.json` by hand for
+catalog items.** Run
 `catalog` and show the user its output.
 
 If `catalog` is not on PATH, tell the user to run:

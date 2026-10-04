@@ -210,12 +210,16 @@ lock_del() { jedit "$(lock_of "$1")" 'del(.items[$n])' --arg n "$2"; }
 
 # ------------------------------------------------------------- versions ----
 
-dir_hash() { # content hash of a directory, independent of file modes and order
+path_hash() { # content hash of a file or directory, independent of file modes and order
+  if [ -f "$1" ]; then
+    shasum -a 256 <"$1" | cut -c1-12
+    return
+  fi
   (cd "$1" && find . -type f ! -name .DS_Store -print0 | LC_ALL=C sort -z | xargs -0 shasum -a 256) |
     shasum -a 256 | cut -c1-12
 }
 
-item_src_dir() { # <name> -> directory holding the item's files in the index or upstream
+item_src() { # <name> -> the item's file or directory in the index or upstream
   local src path repo pin dir
   src=$(iget "$1" source)
   path=$(iget "$1" path)
@@ -227,7 +231,7 @@ item_src_dir() { # <name> -> directory holding the item's files in the index or 
     [ -n "$repo" ] && [ -n "$pin" ] || die "source $src of $1 has no repo/pinned"
     dir="$(fetch_repo "$repo" "$pin")/$path"
   fi
-  [ -d "$dir" ] || die "$1: $path not found in source $src"
+  [ -e "$dir" ] || die "$1: $path not found in source $src"
   echo "$dir"
 }
 
@@ -236,8 +240,8 @@ item_version() { # <name> -> the version the index currently wants installed
   kind=$(iget "$1" kind)
   src=$(iget "$1" source)
   case "$kind" in
-    skill | hook)
-      if [ "$src" = self ]; then dir_hash "$(item_src_dir "$1")"; else sget "$src" pinned; fi
+    skill | hook | rule)
+      if [ "$src" = self ]; then path_hash "$(item_src "$1")"; else sget "$src" pinned; fi
       ;;
     tool | mcp) sget "$src" pinned ;;
     plugin) sget "$src" reviewed ;;
@@ -248,7 +252,7 @@ subst_version() { local v; v=$(sget "$(iget "$1" source)" pinned); echo "${2//\{
 
 # -------------------------------------------------------------- install ----
 
-copy_dir_item() { # <scope> <name> <dest dir>: copy the item's files, guarding local edits
+copy_item() { # <scope> <name> <dest>: copy the item's file or directory, guarding local edits
   local scope=$1 name=$2 dest=$3 entry old_hash src
   entry=$(lock_get "$scope" "$name")
   if [ -e "$dest" ]; then
@@ -256,15 +260,20 @@ copy_dir_item() { # <scope> <name> <dest dir>: copy the item's files, guarding l
       [ "$OPT_FORCE" = 1 ] || die "$dest exists and was not installed by the catalog; use --force to replace it"
     else
       old_hash=$(echo "$entry" | jq -r '.hash // empty')
-      if [ -n "$old_hash" ] && [ "$(dir_hash "$dest")" != "$old_hash" ] && [ "$OPT_FORCE" != 1 ]; then
+      if [ -n "$old_hash" ] && [ "$(path_hash "$dest")" != "$old_hash" ] && [ "$OPT_FORCE" != 1 ]; then
         confirm "$name has local edits in $dest. Overwrite them?" || die "left $name unchanged"
       fi
     fi
   fi
-  src=$(item_src_dir "$name")
+  src=$(item_src "$name")
   rm -rf "$dest"
-  mkdir -p "$dest"
-  cp -R "$src/." "$dest"
+  if [ -f "$src" ]; then
+    mkdir -p "$(dirname "$dest")"
+    cp "$src" "$dest"
+  else
+    mkdir -p "$dest"
+    cp -R "$src/." "$dest"
+  fi
 }
 
 hook_command() { # <scope> <name> <script>
@@ -314,10 +323,16 @@ install_item() { # <scope> <name>
   case "$kind" in
     skill)
       dest="$cdir/skills/$name"
-      copy_dir_item "$scope" "$name" "$dest"
+      copy_item "$scope" "$name" "$dest"
       [ -f "$dest/SKILL.md" ] || warn "$name has no SKILL.md"
-      entry=$(jq -n --arg k "$kind" --arg s "$src" --arg v "$version" --arg h "$(dir_hash "$dest")" \
+      entry=$(jq -n --arg k "$kind" --arg s "$src" --arg v "$version" --arg h "$(path_hash "$dest")" \
         --arg f ".claude/skills/$name" '{kind: $k, source: $s, version: $v, hash: $h, files: [$f]}')
+      ;;
+    rule)
+      dest="$cdir/rules/$name.md"
+      copy_item "$scope" "$name" "$dest"
+      entry=$(jq -n --arg k "$kind" --arg s "$src" --arg v "$version" --arg h "$(path_hash "$dest")" \
+        --arg f ".claude/rules/$name.md" '{kind: $k, source: $s, version: $v, hash: $h, files: [$f]}')
       ;;
     hook)
       local event matcher script cmd
@@ -325,11 +340,11 @@ install_item() { # <scope> <name>
       matcher=$(jq -r --arg n "$name" '.items[$n].hook.matcher // ""' "$CATALOG")
       script=$(jq -r --arg n "$name" '.items[$n].hook.script' "$CATALOG")
       dest="$cdir/hooks/$name"
-      copy_dir_item "$scope" "$name" "$dest"
+      copy_item "$scope" "$name" "$dest"
       chmod +x "$dest/$script"
       cmd=$(hook_command "$scope" "$name" "$script")
       settings_add_hook "$scope" "$event" "$matcher" "$cmd"
-      entry=$(jq -n --arg k "$kind" --arg s "$src" --arg v "$version" --arg h "$(dir_hash "$dest")" \
+      entry=$(jq -n --arg k "$kind" --arg s "$src" --arg v "$version" --arg h "$(path_hash "$dest")" \
         --arg f ".claude/hooks/$name" --arg e "$event" --arg c "$cmd" \
         '{kind: $k, source: $s, version: $v, hash: $h, files: [$f], hook: {event: $e, command: $c}}')
       ;;
@@ -389,7 +404,7 @@ install_item() { # <scope> <name>
 # Install an item and what it requires. Tools go to user scope, everything
 # else to the requested scope. Already-installed items at the wanted version
 # are skipped, as are tools that were already on PATH before the catalog.
-add_one() { # <scope> <name>
+add_one() { # <scope> <name> [dep]: dep=1 when pulled in by "requires" (--force does not apply)
   local scope=$1 name=$2 r iscope kind entry want
   kind=$(iget "$name" kind)
   iscope=$(iget "$name" scope)
@@ -402,7 +417,8 @@ add_one() { # <scope> <name>
 
   for r in $(irequires "$name"); do
     if has_item "$r"; then
-      add_one "$scope" "$r"
+      # A dependency that is a user item belongs in ~/.claude, whatever the dependent's scope.
+      if [ "$(iget "$r" scope)" = user ]; then add_one user "$r" 1; else add_one "$scope" "$r" 1; fi
     elif ! command -v "$r" >/dev/null; then
       warn "$name needs '$r' on PATH, which is missing"
     fi
@@ -410,7 +426,7 @@ add_one() { # <scope> <name>
 
   entry=$(lock_get "$scope" "$name")
   want=$(item_version "$name")
-  if [ -n "$entry" ] && [ "$OPT_FORCE" != 1 ] &&
+  if [ -n "$entry" ] && { [ "$OPT_FORCE" != 1 ] || [ -n "${3:-}" ]; } &&
     { [ "$(echo "$entry" | jq -r .version)" = "$want" ] || [ "$(echo "$entry" | jq -r .version)" = external ]; }; then
     say "• $name already installed ($scope) @ $(echo "$want" | cut -c1-12)"
     return 0
@@ -600,7 +616,7 @@ cmd_update() {
     if [ "$kind" = tool ] && [ "$have" = external ]; then continue; fi
     note=""
     if [ -n "$(echo "$entry" | jq -r '.hash // empty')" ] &&
-      [ "$(dir_hash "$(base_of "$scope")/$(echo "$entry" | jq -r '.files[0]')")" != "$(echo "$entry" | jq -r .hash)" ]; then
+      [ "$(path_hash "$(base_of "$scope")/$(echo "$entry" | jq -r '.files[0]')")" != "$(echo "$entry" | jq -r .hash)" ]; then
       note="  ← has local edits, which the update overwrites"
     fi
     say "  $name ($kind): $(echo "$have" | cut -c1-12) → $(echo "$want" | cut -c1-12)$note"
@@ -630,7 +646,7 @@ cmd_doctor() {
         if [ ! -e "$base/$f" ]; then
           say "  ✘ $name: $f is missing (reinstall: catalog add$hint --force $name)"
           problems=$((problems + 1))
-        elif [ "$(echo "$entry" | jq -r '.hash // empty')" != "" ] && [ "$(dir_hash "$base/$f")" != "$(echo "$entry" | jq -r .hash)" ]; then
+        elif [ "$(echo "$entry" | jq -r '.hash // empty')" != "" ] && [ "$(path_hash "$base/$f")" != "$(echo "$entry" | jq -r .hash)" ]; then
           say "  ! $name: locally edited ($f)"
         fi
       done

@@ -5,7 +5,7 @@ Status: implemented 2026-10-03 (`catalog.sh`, `catalog.json`, `sources.json`, `s
 ## Goal
 
 Turn this repo from a plugin marketplace into an **index**: a catalog of the
-skills, hooks, MCP servers, plugins and CLI tools I use, which any machine or
+skills, rules, hooks, MCP servers, plugins and CLI tools I use, which any machine or
 project can pull from selectively, without cloning the repo or installing a
 plugin. Third-party items are **referenced, not copied**, pinned to a version,
 and checked for upstream updates on demand.
@@ -31,6 +31,7 @@ catalog.sh            the fetcher / updater (replaces install.sh)
 skills/<name>/        my own skills (unchanged)
   catalog/SKILL.md    the bootstrap skill that drives catalog.sh
 hooks/<name>/         my own hooks: script + README (unchanged, minus hooks.json)
+rules/<name>.md       my own rules
 docs/                 this design
 README.md             catalog table generated from catalog.json
 ```
@@ -111,10 +112,10 @@ keeps it as a plugin).
 
 | Field | Required | Meaning |
 |---|---|---|
-| `kind` | yes | `skill`, `hook`, `mcp`, `plugin`, `tool` |
+| `kind` | yes | `skill`, `rule`, `hook`, `mcp`, `plugin`, `tool` |
 | `scope` | yes | `user` or `project` |
 | `source` | yes | `self` (this repo) or a key in `sources.json` |
-| `path` | skill, hook | Directory inside the source repo |
+| `path` | skill, rule, hook | Directory (file, for a rule) inside the source repo |
 | `hook` | hook | `event`, optional `matcher`, `script` filename |
 | `mcp` | mcp | The server config as it goes into `.mcp.json`; `{version}` is substituted from the source pin |
 | `install`, `bin` | tool | Install command (with `{version}`) and the binary to detect |
@@ -201,6 +202,7 @@ Sets how deep the update review goes (see [Updates](#updates)).
 | Kind | `scope: user` | `scope: project` |
 |---|---|---|
 | skill | `~/.claude/skills/<name>/` | `<project>/.claude/skills/<name>/` |
+| rule | `~/.claude/rules/<name>.md` | `<project>/.claude/rules/<name>.md` |
 | hook | Script → `~/.claude/hooks/<name>/`; entry merged into `~/.claude/settings.json` with command `~/.claude/hooks/<name>/<script>` | Script → `.claude/hooks/<name>/`; entry merged into `.claude/settings.json` with command `"$CLAUDE_PROJECT_DIR"/.claude/hooks/<name>/<script>` |
 | mcp | `claude mcp add --scope user …` | Merged into `<project>/.mcp.json` |
 | plugin | `claude plugin marketplace add` + `claude plugin install` | `extraKnownMarketplaces` + `enabledPlugins` in `.claude/settings.json`, so whoever opens the project is prompted to install it |
@@ -355,6 +357,7 @@ User scope, installed by `setup`. It tells Claude:
 | millwright-inspector-development-machine | plugin | user |
 | plantuml-mcp-server, agent-browser CLI | tool | user |
 | catalog | skill | user |
+| context7-docs | rule | user |
 
 ## Scenario diagrams
 
