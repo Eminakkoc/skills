@@ -15,7 +15,7 @@ CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/claude-catalog"
 BIN_DIR="${CATALOG_BIN_DIR:-$HOME/.local/bin}"
 
 LOCAL_INDEX="${CATALOG_LOCAL:-}"
-OPT_USER=0 OPT_FORCE=0 OPT_YES=0 OPT_JSON=0 OPT_DRY=0
+OPT_USER=0 OPT_FORCE=0 OPT_YES=0 OPT_JSON=0 OPT_BUNDLES=0 OPT_DRY=0
 INDEX_DIR="" INDEX_SHA="" INDEX_ID="" CATALOG="" SOURCES=""
 PROJECT_BASE=""
 
@@ -45,6 +45,7 @@ Options
   --yes, -y     answer yes to every confirmation
   --dry-run     show what update/doctor would change, change nothing
   --json        machine-readable output (list, check-updates)
+  --bundles     with list --json: print the bundles and their items instead of the items
   --local PATH  read the index from a local checkout instead of GitHub
 EOF
 }
@@ -546,7 +547,10 @@ cmd_list() {
   for a in "$@"; do [ "$a" = --installed ] && installed=1; done
 
   if [ "$installed" = 0 ]; then
-    if [ "$OPT_JSON" = 1 ]; then jq '.items' "$CATALOG"; return; fi
+    if [ "$OPT_JSON" = 1 ]; then
+      if [ "$OPT_BUNDLES" = 1 ]; then jq '.bundles' "$CATALOG"; else jq '.items' "$CATALOG"; fi
+      return
+    fi
     jq -r '.items | to_entries[] | [.key, .value.kind, .value.scope, .value.source, .value.description] | @tsv' "$CATALOG" |
       awk -F'\t' '{ printf "%-42s %-7s %-8s %-22s %s\n", $1, $2, $3, $4, $5 }'
     say ""
@@ -885,6 +889,7 @@ main() {
       --force) OPT_FORCE=1 ;;
       --yes | -y) OPT_YES=1 ;;
       --json) OPT_JSON=1 ;;
+      --bundles) OPT_BUNDLES=1 ;;
       --dry-run) OPT_DRY=1 ;;
       --local) shift; LOCAL_INDEX=${1:?--local needs a path} ;;
       --local=*) LOCAL_INDEX=${1#--local=} ;;

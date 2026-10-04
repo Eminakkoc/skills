@@ -23,6 +23,7 @@ Claude Code afterwards.
 
 ```bash
 catalog list                      # what the catalog offers
+catalog list --json --bundles     # bundles and their items, as JSON (--json alone: the items)
 catalog add bundle:web            # or individual items: catalog add composition-patterns
 catalog list --installed          # what this project and ~/.claude have
 catalog doctor                    # after cloning: check files and required CLI tools
