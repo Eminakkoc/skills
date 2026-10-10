@@ -17,7 +17,7 @@ and checked for upstream updates on demand.
 | 1 | Every item has a `scope`: `user` (goes into `~/.claude`) or `project` (goes into a project's `.claude/`). The fetcher refuses to put a `user` item into a project unless forced (`--force`). |
 | 2 | The marketplace is retired. `.claude-plugin/` and `hooks/hooks.json` are deleted. Wrapped third-party skills become plain references; real third-party plugins stay plugins, the index only records where they come from. |
 | 3 | `sources.json` has one entry per upstream repo/package with a single version. `catalog/` has one file per item, naming its source and path. Update checks report only the item paths that actually changed. |
-| 4 | A source is either `pinned` (the fetcher enforces the version) or `reviewed` (records the last version I checked; the index cannot enforce it). Sources with no version (remote MCPs) have neither. |
+| 4 | A source is either `pinned` (the fetcher enforces the version) or `reviewed` (records the last version I checked; the index cannot enforce it). Sources with no version (remote MCPs) have neither. A `github`, `npm` or `pypi` source may be pinned to `"latest"`: it then follows upstream, resolved to a concrete version once per run and recorded in the lock file, and skips the review in decision 6. |
 | 5 | A `catalog.sh` script does all file work; a thin user-scope `catalog` skill teaches Claude when and how to run it. Claude never edits settings or lock files by hand. |
 | 6 | Updates flow in two steps: (a) index pins move only through a PR I approve, after a risk-scaled review; (b) projects pick up new pins only when I run `catalog update` in them and confirm. |
 | — | Third-party items are referenced, never vendored. An item I modify becomes my own item in this repo. |
@@ -112,6 +112,8 @@ none exist yet (`context7` is installed as a plugin).
 | `mcp` | mcp | The server config as it goes into `.mcp.json`; `{version}` is substituted from the source pin |
 | `install`, `bin` | tool | Install command (with `{version}`) and the binary to detect |
 | `requires` | no | Other item names (usually `tool`s) or plain binaries that must be present |
+| `include` | no | Skill or hook directories: only these files/folders (relative to `path`) are copied, for upstream skills that ship content they never read |
+| `allow` | no | Permission rules merged into `permissions.allow` of the scope's `settings.json`; recorded in the lock entry and removed (or swapped) by `remove`/`update` |
 | `description` | yes | One line, used for the README table and `catalog list` |
 
 `kind: plugin` items take their marketplace and plugin name from the source.
@@ -243,7 +245,7 @@ it from a checkout instead.
 | `self-update` | Replaces `~/.local/bin/catalog` with the index's `catalog.sh` (moved into place, so a running copy isn't disturbed). `update` runs it first. |
 | `doctor` | Checks both lock files: files present, local edits, plugins installed, tools and `requires` on PATH. Offers to install missing tools. Exit 1 on problems. |
 | `check-updates [--json]` | Index maintenance: compares every source's `pinned`/`reviewed` with upstream and outputs a report (see below). Read-only. |
-| `bump <source> [<version>]` | Index maintenance: moves a source's pin (or `reviewed`) to the given or latest version and updates the date. |
+| `bump <source> [<version>]` | Index maintenance: moves a source's pin (or `reviewed`) to the given or latest version and updates the date. A source pinned to `"latest"` needs an explicit version (which freezes it). |
 | `readme` | Regenerates the README catalog and bundle tables from `catalog/`. |
 
 Options: `--user` (target `~/.claude`), `--force` (put a `user` item in a
@@ -287,7 +289,8 @@ curl -fsSL https://raw.githubusercontent.com/Eminakkoc/skills/main/catalog.sh | 
 ```
 
 `status` is one of `current`, `update`, `unaffected` (a `github` source moved
-upstream but none of the used paths changed), `unknown` (latest version
+upstream but none of the used paths changed), `tracking` (pinned to `"latest"`;
+`latest` shows what an install would get now; nothing to review), `unknown` (latest version
 couldn't be determined), `reachable` / `unreachable` (remote MCPs). A `github`
 source can set `branch` to track something other than the default branch.
 

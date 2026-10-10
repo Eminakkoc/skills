@@ -36,7 +36,8 @@ Using the catalog
 
 Maintaining the index (run inside a checkout of the index repo)
   check-updates                  compare every source with upstream (read-only)
-  bump <source> [version]        move a source's pin to a version (default: latest)
+  bump <source> [version]        move a source's pin to a version (default: the
+                                 newest; sources pinned to "latest" need a version)
   readme                         regenerate the catalog table in README.md
 
 Options
@@ -119,7 +120,7 @@ build_catalog() {
   files=$(find "$INDEX_DIR/catalog" -mindepth 2 -maxdepth 2 -name '*.json' | LC_ALL=C sort)
   [ -n "$files" ] || die "no item files in $INDEX_DIR/catalog"
   CATALOG=$(mktemp "${TMPDIR:-/tmp}/catalog.XXXXXX")
-  trap 'rm -f "$CATALOG"' EXIT
+  trap 'rm -f "$CATALOG" "$CATALOG.latest"' EXIT
   # shellcheck disable=SC2086 # file paths come from find and contain no spaces by convention
   jq -n --arg root "$INDEX_DIR/catalog/" '
     {skills: "skill", rules: "rule", hooks: "hook", plugins: "plugin", mcp: "mcp", tools: "tool"} as $kinds
@@ -254,6 +255,22 @@ path_hash() { # content hash of a file or directory, independent of file modes a
     shasum -a 256 | cut -c1-12
 }
 
+# A source pinned to "latest" follows upstream instead of a fixed version. It
+# is resolved once per run (cached in a file, since callers run in subshells),
+# so every item from that source sees the same version.
+source_pin() { # <source> -> the version to fetch or install
+  local pin cache="$CATALOG.latest" v
+  pin=$(sget "$1" pinned)
+  [ "$pin" = latest ] || { echo "$pin"; return; }
+  v=$(awk -F'\t' -v s="$1" '$1 == s { print $2 }' "$cache" 2>/dev/null || true)
+  if [ -z "$v" ]; then
+    v=$(source_latest "$1" || true)
+    [ -n "$v" ] && [ "$v" != "?" ] || die "cannot resolve the latest version of $1"
+    printf '%s\t%s\n' "$1" "$v" >>"$cache"
+  fi
+  echo "$v"
+}
+
 item_src() { # <name> -> the item's file or directory in the index or upstream
   local src path repo pin dir
   src=$(iget "$1" source)
@@ -262,7 +279,7 @@ item_src() { # <name> -> the item's file or directory in the index or upstream
     dir="$INDEX_DIR/$path"
   else
     repo=$(sget "$src" repo)
-    pin=$(sget "$src" pinned)
+    pin=$(source_pin "$src")
     [ -n "$repo" ] && [ -n "$pin" ] || die "source $src of $1 has no repo/pinned"
     dir="$(fetch_repo "$repo" "$pin")/$path"
   fi
@@ -276,19 +293,21 @@ item_version() { # <name> -> the version the index currently wants installed
   src=$(iget "$1" source)
   case "$kind" in
     skill | hook | rule)
-      if [ "$src" = self ]; then path_hash "$(item_src "$1")"; else sget "$src" pinned; fi
+      if [ "$src" = self ]; then path_hash "$(item_src "$1")"; else source_pin "$src"; fi
       ;;
-    tool | mcp) sget "$src" pinned ;;
+    tool | mcp) source_pin "$src" ;;
     plugin) sget "$src" reviewed ;;
   esac
 }
 
-subst_version() { local v; v=$(sget "$(iget "$1" source)" pinned); echo "${2//\{version\}/$v}"; }
+subst_version() { local v; v=$(source_pin "$(iget "$1" source)"); echo "${2//\{version\}/$v}"; }
 
 # -------------------------------------------------------------- install ----
 
+# A directory item can list "include": the files or folders (relative to its
+# path) to copy, for upstream skills that ship content they never read.
 copy_item() { # <scope> <name> <dest>: copy the item's file or directory, guarding local edits
-  local scope=$1 name=$2 dest=$3 entry old_hash src
+  local scope=$1 name=$2 dest=$3 entry old_hash src include f
   entry=$(lock_get "$scope" "$name")
   if [ -e "$dest" ]; then
     if [ -z "$entry" ]; then
@@ -301,14 +320,37 @@ copy_item() { # <scope> <name> <dest>: copy the item's file or directory, guardi
     fi
   fi
   src=$(item_src "$name")
+  include=$(jq -r --arg n "$name" '.items[$n].include // [] | .[]' "$CATALOG")
+  for f in $include; do
+    [ -e "$src/$f" ] || die "$name: include $f not found in its source"
+  done
   rm -rf "$dest"
   if [ -f "$src" ]; then
     mkdir -p "$(dirname "$dest")"
     cp "$src" "$dest"
+  elif [ -n "$include" ]; then
+    for f in $include; do
+      mkdir -p "$(dirname "$dest/$f")"
+      cp -R "$src/$f" "$dest/$f"
+    done
   else
     mkdir -p "$dest"
     cp -R "$src/." "$dest"
   fi
+}
+
+# Permission rules an item adds to settings.json ("allow" in its catalog
+# file). Like hook entries they are identified by their text, so the catalog
+# swaps exactly the rules it added and leaves hand-written ones alone.
+settings_swap_allow() { # <scope> <old rules json> <new rules json>
+  local f
+  f=$(settings_of "$1")
+  [ -f "$f" ] || [ "$3" != "[]" ] || return 0
+  jedit "$f" '
+    ((.permissions.allow // []) - $old) as $kept
+    | .permissions.allow = $kept + ($new - $kept)
+    | if .permissions.allow == [] then del(.permissions.allow) else . end
+    | if .permissions == {} then del(.permissions) else . end' --argjson old "$2" --argjson new "$3"
 }
 
 hook_command() { # <scope> <name> <script>
@@ -432,6 +474,15 @@ install_item() { # <scope> <name>
     *) die "$name: unknown kind $kind" ;;
   esac
 
+  local allow old_allow
+  allow=$(jq -c --arg n "$name" '.items[$n].allow // []' "$CATALOG")
+  old_allow=$(lock_get "$scope" "$name" | jq -c '.allow // []')
+  [ -n "$old_allow" ] || old_allow="[]"
+  if [ "$allow" != "[]" ] || [ "$old_allow" != "[]" ]; then
+    settings_swap_allow "$scope" "$old_allow" "$allow"
+    entry=$(echo "$entry" | jq -c --argjson a "$allow" 'if $a == [] then . else .allow = $a end')
+  fi
+
   lock_put "$scope" "$name" "$entry"
   say "✔ $name ($kind, $scope) @ $(echo "$version" | cut -c1-12)"
 }
@@ -506,6 +557,9 @@ uninstall_item() { # <scope> <name>
       say "  $(echo "$entry" | jq -r .bin) left installed; uninstall it with its package manager if unwanted"
       ;;
   esac
+  if [ "$(echo "$entry" | jq -c '.allow // []')" != "[]" ]; then
+    settings_swap_allow "$scope" "$(echo "$entry" | jq -c '.allow')" '[]'
+  fi
 
   for f in $(echo "$entry" | jq -r '.files // [] | .[]'); do
     rm -rf "${base:?}/$f"
@@ -805,6 +859,8 @@ cmd_check_updates() {
       if [ "$code" = 000 ]; then status=unreachable; else status=reachable; fi
     elif [ -z "$latest" ] || [ "$latest" = "?" ]; then
       status=unknown
+    elif [ "$cur" = latest ]; then
+      status=tracking
     elif [ "$latest" = "$cur" ]; then
       status=current
     else
@@ -844,6 +900,9 @@ cmd_bump() {
   local s=$1 v=${2:-} field
   jq -e --arg s "$s" '.sources | has($s)' "$SOURCES" >/dev/null || die "unknown source: $s"
   field=$(source_field "$s")
+  if [ -z "$v" ] && [ "$(sget "$s" "$field")" = latest ]; then
+    die "$s follows the latest version; nothing to bump (give a version to pin it instead)"
+  fi
   [ -n "$v" ] || v=$(source_latest "$s")
   [ -n "$v" ] && [ "$v" != "?" ] || die "could not determine the latest version of $s"
   jedit "$SOURCES" '.sources[$s][$f] = $v | .sources[$s][$f + "At"] = $d' \

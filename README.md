@@ -108,8 +108,11 @@ and edit it.
 - **My own hook:** add `hooks/<name>/<name>.sh` (executable) and a README, then
   `catalog/hooks/<name>.json` with `"hook": {"event": ..., "script": ...}`.
 - **A third-party skill:** add (or reuse) a `github` source in `sources.json`
-  pinned to a commit SHA, then `catalog/skills/<name>.json` pointing at its
-  `path` in that repo.
+  pinned to a commit SHA (or to `"latest"` to always take upstream's newest
+  commit), then `catalog/skills/<name>.json` pointing at its `path` in that
+  repo. Optional: `"include"` lists the files or folders to copy when the skill
+  ships content it never reads, and `"allow"` lists permission rules the item
+  adds to `settings.json` (removed again with the item).
 - **A third-party plugin:** add a `plugin` source (marketplace, its repo, plugin
   name, `reviewed` version), then `catalog/plugins/<name>.json`.
 - **A CLI tool something needs:** add an `npm`/`pypi` source and
@@ -134,3 +137,8 @@ Inside this repo, ask Claude to "check catalog updates", or run:
 The `catalog` skill reviews each update by risk (skills: summary; plugins:
 changelog; CLI tools and MCP servers: full diff) and opens a PR with the bumps.
 Projects pick up merged pins with `catalog update`.
+
+A source pinned to `"latest"` (currently `modern-web-guidance`) skips the
+review and bump: `check-updates` shows it as `tracking`, and every `catalog add`
+or `catalog update` installs upstream's newest commit. To freeze it again, run
+`./catalog.sh bump <source> <sha>`.

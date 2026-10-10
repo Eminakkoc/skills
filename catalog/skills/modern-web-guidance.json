@@ -2,5 +2,12 @@
   "scope": "project",
   "source": "modern-web-guidance",
   "path": "skills/modern-web-guidance",
+  "include": [
+    "SKILL.md"
+  ],
+  "allow": [
+    "Bash(npx -y modern-web-guidance@latest *)",
+    "Bash(pnpx modern-web-guidance@latest *)"
+  ],
   "description": "Google Chrome: modern web platform best practices"
 }

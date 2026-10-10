@@ -20,8 +20,7 @@
     "modern-web-guidance": {
       "type": "github",
       "repo": "GoogleChrome/modern-web-guidance",
-      "pinned": "84ae7251ee919239d5ea85aef25897983f26601e",
-      "pinnedAt": "2026-10-03",
+      "pinned": "latest",
       "risk": "low",
       "changelog": "https://github.com/GoogleChrome/modern-web-guidance/commits/main"
     },

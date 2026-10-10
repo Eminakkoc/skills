@@ -57,7 +57,9 @@ Run this only in a checkout of `Eminakkoc/skills`.
      the project, install scripts and permission changes.
 
    `status: "unaffected"` means upstream moved but none of the used paths
-   changed: mention it, recommend skipping. `unknown` / `unreachable`: report.
+   changed: mention it, recommend skipping. `tracking` means the source is
+   pinned to `"latest"` and follows upstream on its own: list it, don't review
+   or bump it. `unknown` / `unreachable`: report.
 3. Present a table (source, current → latest, risk, verdict) with the findings
    and ask which to accept.
 4. For the accepted ones: create a branch, run `catalog bump <source>` for each,
