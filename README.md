@@ -47,6 +47,7 @@ you pass `--force`.
 | Item | Kind | Scope | Source | What it does |
 |---|---|---|---|---|
 | `expand-atamo` | hook | user | this repo | `atamo` → apply this and move on to the next item |
+| `expand-detamo` | hook | user | this repo | `detamo` → decline this and move on to the next item |
 | `expand-ebse` | hook | user | this repo | `ebse` → explain briefly in simple language and with examples |
 | `expand-exi2s` | hook | user | this repo | `exi2s` → explain in two sentences |
 | `expand-exios` | hook | user | this repo | `exios` → explain in one sentence |
@@ -71,7 +72,7 @@ you pass `--force`.
 
 | Bundle | What it is for | Items |
 |---|---|---|
-| `bundle:personal` | Everything I want on every machine: prompt shortcuts, the catalog skill, personal plugins and rules | catalog, expand-ebse, expand-wtru, expand-atamo, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine, context7-docs |
+| `bundle:personal` | Everything I want on every machine: prompt shortcuts, the catalog skill, personal plugins and rules | catalog, expand-ebse, expand-wtru, expand-atamo, expand-detamo, expand-exios, expand-exi2s, expand-ruview, superpowers, context7, millwright-inspector-development-machine, context7-docs |
 | `bundle:react` | React-only skills: composition patterns and view transitions | composition-patterns, react-view-transitions |
 | `bundle:vercel` | Projects deployed on Vercel: the Vercel plugin plus design guidelines | vercel, web-design-guidelines |
 | `bundle:web-frontend` | Frontend projects: the web bundle plus the Vercel and Figma plugins | web-images, web-design-guidelines, composition-patterns, react-view-transitions, modern-web-guidance, agent-browser, vercel, figma |
