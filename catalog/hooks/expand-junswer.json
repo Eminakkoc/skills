@@ -1,0 +1,13 @@
+{
+  "scope": "user",
+  "source": "self",
+  "path": "hooks/expand-junswer",
+  "hook": {
+    "event": "UserPromptSubmit",
+    "script": "expand-junswer.sh"
+  },
+  "requires": [
+    "jq"
+  ],
+  "description": "`junswer` → Do not implement, just answer"
+}

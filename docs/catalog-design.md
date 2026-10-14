@@ -342,7 +342,7 @@ User scope, installed by `setup`. It tells Claude:
 
 | Item | Kind | Scope |
 |---|---|---|
-| expand-ebse, expand-wtru, expand-atamo, expand-detamo, expand-exios, expand-exi2s, expand-ruview | hook | user |
+| expand-ebse, expand-wtru, expand-atamo, expand-detamo, expand-exios, expand-exi2s, expand-junswer, expand-ruview | hook | user |
 | web-images | skill | project |
 | web-design-guidelines, composition-patterns, react-view-transitions | skill (vercel-agent-skills) | project |
 | agent-browser | skill | project |
